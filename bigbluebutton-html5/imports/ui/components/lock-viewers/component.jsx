@@ -140,12 +140,6 @@ class LockViewersComponent extends Component {
     );
   }
 
-  componentWillUnmount() {
-    const { closeModal } = this.props;
-
-    closeModal();
-  }
-
   render() {
     const {
       closeModal,

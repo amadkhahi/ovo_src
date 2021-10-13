@@ -12,7 +12,6 @@ import handleRecordingTimerChange from './handlers/recordingTimerChange';
 import handleTimeRemainingUpdate from './handlers/timeRemainingUpdate';
 import handleChangeWebcamOnlyModerator from './handlers/webcamOnlyModerator';
 import handleSelectRandomViewer from './handlers/selectRandomViewer';
-import handleBroadcastLayout from './handlers/broadcastLayout';
 
 RedisPubSub.on('MeetingCreatedEvtMsg', handleMeetingCreation);
 RedisPubSub.on('SyncGetMeetingInfoRespMsg', handleGetAllMeetings);
@@ -28,4 +27,3 @@ RedisPubSub.on('GuestPolicyChangedEvtMsg', handleGuestPolicyChanged);
 RedisPubSub.on('GuestLobbyMessageChangedEvtMsg', handleGuestLobbyMessageChanged);
 RedisPubSub.on('MeetingTimeRemainingUpdateEvtMsg', handleTimeRemainingUpdate);
 RedisPubSub.on('SelectRandomViewerRespMsg', handleSelectRandomViewer);
-RedisPubSub.on('BroadcastLayoutEvtMsg', handleBroadcastLayout);

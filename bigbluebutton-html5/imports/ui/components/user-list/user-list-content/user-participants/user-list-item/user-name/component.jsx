@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages } from 'react-intl';
 import Icon from '/imports/ui/components/icon/component';
-import _ from 'lodash';
 import { styles } from './styles';
 
 const messages = defineMessages({
@@ -33,10 +32,6 @@ const messages = defineMessages({
   menuTitleContext: {
     id: 'app.userList.menuTitleContext',
     description: 'adds context to userListItem menu title',
-  },
-  sharingWebcam: {
-    id: 'app.userList.sharingWebcam',
-    description: 'Text for identifying who is sharing webcam',
   },
   userAriaLabel: {
     id: 'app.userList.userAriaLabel',
@@ -78,21 +73,10 @@ const UserName = (props) => {
 
   const userNameSub = [];
 
-  if (user.isSharingWebcam && LABEL.sharingWebcam) {
-    userNameSub.push(
-      <span key={_.uniqueId('video-')}>
-        <Icon iconName="video" />
-        &nbsp;
-        {intl.formatMessage(messages.sharingWebcam)}
-      </span>,
-    );
-  }
-
   if (isThisMeetingLocked && user.locked && user.role !== ROLE_MODERATOR) {
     userNameSub.push(
-      <span key={_.uniqueId('lock-')}>
+      <span>
         <Icon iconName="lock" />
-        &nbsp;
         {intl.formatMessage(messages.locked)}
       </span>,
     );
@@ -120,7 +104,7 @@ const UserName = (props) => {
       <span aria-hidden className={styles.userNameMain}>
         <span>
           {user.name}
-          &nbsp;
+&nbsp;
         </span>
         <i>{(isMe(user.userId)) ? `(${intl.formatMessage(messages.you)})` : ''}</i>
       </span>

@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import cx from 'classnames';
 import Button from '/imports/ui/components/button/component';
+import { ACTIONSBAR_HEIGHT } from '/imports/ui/components/layout/layout-manager/component';
 import CaptionsButtonContainer from '/imports/ui/components/actions-bar/captions/container';
 import withShortcutHelper from '/imports/ui/components/shortcut-help/service';
 import { styles } from './styles.scss';
@@ -9,7 +10,7 @@ import ScreenshareButtonContainer from '/imports/ui/components/actions-bar/scree
 import AudioControlsContainer from '../audio/audio-controls/container';
 import JoinVideoOptionsContainer from '../video-provider/video-button/container';
 import PresentationOptionsContainer from './presentation-options/component';
-
+import LogoutButton from './logout-button/component';
 class ActionsBar extends PureComponent {
   render() {
     const {
@@ -33,20 +34,18 @@ class ActionsBar extends PureComponent {
       setEmojiStatus,
       currentUser,
       shortcuts,
-      layoutContextDispatch,
-      actionsBarStyle,
     } = this.props;
 
     return (
       <div
         className={styles.actionsbar}
-        style={
-          {
-            height: actionsBarStyle.innerHeight,
-          }
-        }
+        style={{
+          height: ACTIONSBAR_HEIGHT,
+        }}
       >
+        {/*
         <div className={styles.left}>
+          
           <ActionsDropdown {...{
             amIPresenter,
             amIModerator,
@@ -65,8 +64,30 @@ class ActionsBar extends PureComponent {
               <CaptionsButtonContainer {...{ intl }} />
             )
             : null}
-        </div>
+            </div>*/
+            <div>
+          {isCaptionsAvailable
+            ? (
+              <CaptionsButtonContainer {...{ intl }} />
+            )
+            : null}
+            </div>}
         <div className={styles.center}>
+          <ActionsDropdown {...{
+            amIPresenter,
+            amIModerator,
+            isPollingEnabled,
+            isSelectRandomUserEnabled,
+            allowExternalVideo,
+            handleTakePresenter,
+            intl,
+            isSharingVideo,
+            stopExternalVideoShare,
+            isMeteorConnected,
+          }}
+          />
+
+
           <AudioControlsContainer />
           {enableVideo
             ? (
@@ -78,13 +99,10 @@ class ActionsBar extends PureComponent {
             isMeteorConnected,
           }}
           />
-        </div>
-        <div className={styles.right}>
           {isLayoutSwapped && !isPresentationDisabled
             ? (
               <PresentationOptionsContainer
                 toggleSwapLayout={toggleSwapLayout}
-                layoutContextDispatch={layoutContextDispatch}
                 isThereCurrentPresentation={isThereCurrentPresentation}
               />
             )
@@ -117,6 +135,14 @@ class ActionsBar extends PureComponent {
               />
             )
             : null}
+          <LogoutButton {...{
+            intl,
+            isMeteorConnected,
+          }}
+          />                      
+        </div>
+        <div className={styles.right}>
+
         </div>
       </div>
     );

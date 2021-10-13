@@ -7,15 +7,12 @@ import {
   fetchWebRTCMappedStunTurnServers,
   getMappedFallbackStun
 } from '/imports/utils/fetchStunTurnServers';
-import getFromMeetingSettings from '/imports/ui/services/meeting-settings';
 
 const SFU_URL = Meteor.settings.public.kurento.wsUrl;
-const DEFAULT_LISTENONLY_MEDIA_SERVER = Meteor.settings.public.kurento.listenOnlyMediaServer;
 const MEDIA = Meteor.settings.public.media;
 const MEDIA_TAG = MEDIA.mediaTag.replace(/#/g, '');
 const GLOBAL_AUDIO_PREFIX = 'GLOBAL_AUDIO_';
 const RECONNECT_TIMEOUT_MS = MEDIA.listenOnlyCallTimeout || 15000;
-const OFFERING = MEDIA.listenOnlyOffering;
 const RECV_ROLE = 'recv';
 const BRIDGE_NAME = 'kurento';
 
@@ -36,11 +33,6 @@ const mapErrorCode = (error) => {
   error.errorCode = mappedErrorCode;
   return error;
 }
-
-// TODO Would be interesting to move this to a service along with the error mapping
-const getMediaServerAdapter = () => {
-  return getFromMeetingSettings('media-server-listenonly', DEFAULT_LISTENONLY_MEDIA_SERVER);
-};
 
 export default class KurentoAudioBridge extends BaseAudioBridge {
   constructor(userData) {
@@ -212,7 +204,6 @@ export default class KurentoAudioBridge extends BaseAudioBridge {
               userName: this.name,
               caleeName: `${GLOBAL_AUDIO_PREFIX}${this.voiceBridge}`,
               iceServers,
-              offering: OFFERING,
             };
 
             this.broker = new ListenOnlyBroker(
@@ -263,8 +254,6 @@ export default class KurentoAudioBridge extends BaseAudioBridge {
           userName: this.name,
           caleeName: `${GLOBAL_AUDIO_PREFIX}${this.voiceBridge}`,
           iceServers,
-          offering: OFFERING,
-          mediaServer: getMediaServerAdapter(),
         };
 
         this.broker = new ListenOnlyBroker(
@@ -303,5 +292,3 @@ export default class KurentoAudioBridge extends BaseAudioBridge {
     return Promise.resolve();
   }
 }
-
-module.exports = KurentoAudioBridge;

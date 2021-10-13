@@ -7,7 +7,6 @@ import Modal from '/imports/ui/components/modal/simple/component';
 import Button from '/imports/ui/components/button/component';
 import LocalesDropdown from '/imports/ui/components/locales-dropdown/component';
 import { styles } from './styles';
-import { PANELS, ACTIONS } from '../../layout/enums';
 
 const intlMessages = defineMessages({
   closeLabel: {
@@ -70,31 +69,18 @@ class WriterMenu extends PureComponent {
     this.handleStart = this.handleStart.bind(this);
   }
 
-  componentWillUnmount() {
-    const { closeModal } = this.props;
-
-    closeModal();
-  }
-
   handleChange(event) {
     this.setState({ locale: event.target.value });
   }
 
   handleStart() {
-    const { closeModal, takeOwnership, layoutContextDispatch } = this.props;
+    const { closeModal, takeOwnership } = this.props;
     const { locale } = this.state;
 
     takeOwnership(locale);
     Session.set('captionsLocale', locale);
-
-    layoutContextDispatch({
-      type: ACTIONS.SET_SIDEBAR_CONTENT_IS_OPEN,
-      value: true,
-    });
-    layoutContextDispatch({
-      type: ACTIONS.SET_SIDEBAR_CONTENT_PANEL,
-      value: PANELS.CAPTIONS,
-    });
+    Session.set('openPanel', 'captions');
+    window.dispatchEvent(new Event('panelChanged'));
 
     closeModal();
   }
@@ -122,10 +108,9 @@ class WriterMenu extends PureComponent {
           </h3>
         </header>
         <div className={styles.content}>
-          <span>
+          <label>
             {intl.formatMessage(intlMessages.subtitle)}
-          </span>
-          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+          </label>
           <label
             aria-hidden
             htmlFor="captionsLangSelector"

@@ -203,10 +203,9 @@
 .responseType {
     display: flex;
     justify-content: space-between;
-    flex-flow: wrap;
-    overflow-wrap: break-word;
     position: relative;
     width: 100%;
+    height: var(--poll-input-height);
     margin-bottom: var(--lg-padding-x);
 
     button {
@@ -285,7 +284,6 @@
     padding-left: var(--md-padding-y);
     padding-right: var(--md-padding-y);
     font-size: var(--font-size-base);
-    white-space: pre-wrap;
 
     &:hover {
         span {
@@ -297,11 +295,9 @@
 .startPollBtn {
     position: relative;
     width: 100%;
-    min-height: var(--poll-input-height);
+    height: var(--poll-input-height);
     margin-top: 1rem;
     font-size: var(--font-size-base);
-    overflow-wrap: break-word;
-    white-space: pre-wrap;
 
     &:hover {
         span {
@@ -312,14 +308,21 @@
 
 .pBtn {
     border: solid var(--color-gray-light) 1px;
-    min-height: var(--poll-input-height);
+    height: var(--poll-input-height);
     font-size: var(--font-size-base);
-    white-space: pre-wrap;
     span {
         &:hover {
             opacity: 1;
         }
     }
+}
+
+.btnML {
+    margin-left: 3%;
+}
+
+.btnMR {
+    margin-right: 3%;
 }
 
 .deleteBtn {
@@ -330,7 +333,7 @@
     }
 }
 
-.pBtn {
+.yna {
     width: 100%;
     margin-bottom: 1rem;
 }
@@ -369,49 +372,4 @@
 .dragAndDropPollContainer {
     width: 200px !important;
     height: 200px !important;
-}
-
-.row {
-  display: flex;
-  flex-flow: wrap;
-  flex-grow: 1;
-  justify-content: space-between;
-  margin-top: 0.7rem;
-  margin-bottom: 0.7rem;
-}
-
-.label {
-    color: var(--color-text);
-}
-
-.toggle {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-}
-
-.col {
-  display: flex;
-  position: relative;
-  flex-flow: column;
-  flex-grow: 1;
-  flex-basis: 0;
-  
-  &:last-child {
-    padding-right: 0;
-    padding-left: 1rem;
-
-    [dir="rtl"] & {
-      padding-right: 0.1rem;
-      padding-left: 0;
-    }
-  }
-}
-
-.toggleLabel {
-  margin-right: var(--sm-padding-x);
-
-  [dir="rtl"] & {
-    margin: 0 0 0 var(--sm-padding-x);
-  }
 }

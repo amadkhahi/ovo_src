@@ -1,16 +1,16 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import PresentationContainer from '../presentation/container';
+import PresentationAreaContainer from '../presentation/container';
 
 class PresentationPods extends PureComponent {
   render() {
     /*
       filtering/sorting presentation pods goes here
       all the future UI for the pods also goes here
-      PresentationContainer should fill any empty box provided by us
+      PresentationAreaContainer should fill any empty box provided by us
     */
     return (
-      <PresentationContainer podId="DEFAULT_PRESENTATION_POD" {...this.props} />
+      <PresentationAreaContainer podId="DEFAULT_PRESENTATION_POD" {...this.props} />
     );
   }
 }

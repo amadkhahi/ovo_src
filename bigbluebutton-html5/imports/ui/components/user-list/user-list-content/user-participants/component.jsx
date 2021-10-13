@@ -62,7 +62,6 @@ class UserParticipants extends Component {
     this.changeState = this.changeState.bind(this);
     this.rowRenderer = this.rowRenderer.bind(this);
     this.handleClickSelectedUser = this.handleClickSelectedUser.bind(this);
-    this.selectEl = this.selectEl.bind(this);
   }
 
   componentDidMount() {
@@ -86,19 +85,13 @@ class UserParticipants extends Component {
     return !isPropsEqual || !isStateEqual;
   }
 
-  selectEl(el) {
-    if (!el) return null;
-    if (el.getAttribute('tabindex')) return el?.focus();
-    this.selectEl(el?.firstChild);
-  }
-
   componentDidUpdate(prevProps, prevState) {
     const { selectedUser } = this.state;
 
     if (selectedUser) {
       const { firstChild } = selectedUser;
       if (!firstChild.isEqualNode(document.activeElement)) {
-        this.selectEl(selectedUser);
+        firstChild.focus();
       }
     }
   }
@@ -173,6 +166,7 @@ class UserParticipants extends Component {
     const { roving } = this.props;
     const { selectedUser, scrollArea } = this.state;
     const usersItemsRef = findDOMNode(scrollArea.firstChild);
+
     roving(event, this.changeState, usersItemsRef, selectedUser);
   }
 
@@ -219,7 +213,6 @@ class UserParticipants extends Component {
             : <hr className={styles.separator} />
         }
         <div
-          id={'user-list-virtualized-scroll'}
           className={styles.virtulizedScrollableList}
           tabIndex={0}
           ref={(ref) => {
@@ -251,7 +244,6 @@ class UserParticipants extends Component {
                 className={styles.scrollStyle}
                 overscanRowCount={30}
                 deferredMeasurementCache={this.cache}
-                tabIndex={-1}
               />
             )}
           </AutoSizer>

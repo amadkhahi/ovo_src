@@ -6,7 +6,6 @@ import { HUNDRED_PERCENT, MAX_PERCENT } from '/imports/utils/slideCalcUtils';
 import { defineMessages, injectIntl } from 'react-intl';
 import { toast } from 'react-toastify';
 import PresentationToolbarContainer from './presentation-toolbar/container';
-import PresentationPlaceholder from './presentation-placeholder/component';
 import CursorWrapperContainer from './cursor/cursor-wrapper-container/container';
 import AnnotationGroupContainer from '../whiteboard/annotation-group/container';
 import PresentationOverlayContainer from './presentation-overlay/container';
@@ -18,10 +17,10 @@ import PresentationCloseButton from './presentation-close-button/component';
 import DownloadPresentationButton from './download-presentation-button/component';
 import FullscreenService from '../fullscreen-button/service';
 import FullscreenButtonContainer from '../fullscreen-button/container';
+import { withDraggableConsumer } from '../media/webcam-draggable-overlay/context';
 import Icon from '/imports/ui/components/icon/component';
+import { withLayoutConsumer } from '/imports/ui/components/layout/context';
 import PollingContainer from '/imports/ui/components/polling/container';
-import { ACTIONS, LAYOUT_TYPE } from '../layout/enums';
-import DEFAULT_VALUES from '../layout/defaultValues';
 
 const intlMessages = defineMessages({
   presentationLabel: {
@@ -52,13 +51,13 @@ const intlMessages = defineMessages({
 
 const ALLOW_FULLSCREEN = Meteor.settings.public.app.allowFullscreen;
 
-class Presentation extends PureComponent {
+class PresentationArea extends PureComponent {
   constructor() {
     super();
 
     this.state = {
-      presentationWidth: 0,
-      presentationHeight: 0,
+      presentationAreaWidth: 0,
+      presentationAreaHeight: 0,
       showSlide: false,
       zoom: 100,
       fitToWidth: false,
@@ -77,9 +76,9 @@ class Presentation extends PureComponent {
     this.getPresentationSizesAvailable = this.getPresentationSizesAvailable.bind(this);
     this.handleResize = this.handleResize.bind(this);
 
+
     this.onResize = () => setTimeout(this.handleResize.bind(this), 0);
     this.renderCurrentPresentationToast = this.renderCurrentPresentationToast.bind(this);
-    this.setPresentationRef = this.setPresentationRef.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -98,7 +97,7 @@ class Presentation extends PureComponent {
     if (!prevProps) return stateChange;
 
     // When presenter is changed or slide changed we reset localPosition
-    if (prevProps.currentSlide?.id !== props.currentSlide?.id
+    if (prevProps.currentSlide.id !== props.currentSlide.id
       || prevProps.userIsPresenter !== props.userIsPresenter) {
       stateChange.localPosition = undefined;
     }
@@ -110,22 +109,37 @@ class Presentation extends PureComponent {
     this.getInitialPresentationSizes();
     this.refPresentationContainer.addEventListener('fullscreenchange', this.onFullscreenChange);
     window.addEventListener('resize', this.onResize, false);
+    window.addEventListener('layoutSizesSets', this.onResize, false);
+    window.addEventListener('webcamAreaResize', this.handleResize, false);
 
-    const {
-      currentSlide, slidePosition, layoutContextDispatch,
-    } = this.props;
+    const { slidePosition, layoutContextDispatch } = this.props;
 
-    if (currentSlide) {
+    let currWidth = 0;
+    let currHeight = 0;
+
+    if (slidePosition) {
+      currWidth = slidePosition.width;
+      currHeight = slidePosition.height;
+    }
+
+    layoutContextDispatch({
+      type: 'setPresentationSlideSize',
+      value: {
+        width: currWidth,
+        height: currHeight,
+      },
+    });
+
+    if (currWidth > currHeight || currWidth === currHeight) {
       layoutContextDispatch({
-        type: ACTIONS.SET_PRESENTATION_NUM_CURRENT_SLIDE,
-        value: currentSlide.num,
+        type: 'setPresentationOrientation',
+        value: 'landscape',
       });
+    }
+    if (currHeight > currWidth) {
       layoutContextDispatch({
-        type: ACTIONS.SET_PRESENTATION_CURRENT_SLIDE_SIZE,
-        value: {
-          width: slidePosition.width,
-          height: slidePosition.height,
-        },
+        type: 'setPresentationOrientation',
+        value: 'portrait',
       });
     }
   }
@@ -141,120 +155,118 @@ class Presentation extends PureComponent {
       toggleSwapLayout,
       restoreOnUpdate,
       layoutContextDispatch,
+      layoutContextState,
       userIsPresenter,
-      presentationBounds,
-      numCameras,
     } = this.props;
 
+    const { numUsersVideo } = layoutContextState;
+    const { layoutContextState: prevLayoutContextState } = prevProps;
     const {
-      numCameras: prevNumCameras,
-      presentationBounds: prevPresentationBounds,
-    } = prevProps;
+      numUsersVideo: prevNumUsersVideo,
+    } = prevLayoutContextState;
 
-    if (numCameras !== prevNumCameras) {
+    if (numUsersVideo !== prevNumUsersVideo) {
       this.onResize();
     }
 
-    if (prevProps?.slidePosition && slidePosition) {
+    if(prevProps?.slidePosition && slidePosition){
       const { width: prevWidth, height: prevHeight } = prevProps.slidePosition;
       const { width: currWidth, height: currHeight } = slidePosition;
 
+      if (prevProps.slidePosition.id !== slidePosition.id) {
+        if ((prevWidth > prevHeight && currHeight > currWidth)
+          || (prevHeight > prevWidth && currWidth > currHeight)) {
+          layoutContextDispatch(
+            {
+              type: 'setAutoArrangeLayout',
+              value: true,
+            },
+          );
+        }
+        window.dispatchEvent(new Event('slideChanged'));
+      }
+
       if (prevWidth !== currWidth || prevHeight !== currHeight) {
         layoutContextDispatch({
-          type: ACTIONS.SET_PRESENTATION_CURRENT_SLIDE_SIZE,
+          type: 'setPresentationSlideSize',
           value: {
             width: currWidth,
             height: currHeight,
           },
         });
-      }
-
-      const downloadableOn = !prevProps.currentPresentation.downloadable
-        && currentPresentation.downloadable;
-
-      const shouldCloseToast = !(currentPresentation.downloadable && !userIsPresenter);
-
-      if (
-        prevProps.currentPresentation.name !== currentPresentation.name
-        || (downloadableOn && !userIsPresenter)
-      ) {
-        if (this.currentPresentationToastId) {
-          toast.update(this.currentPresentationToastId, {
-            autoClose: shouldCloseToast,
-            render: this.renderCurrentPresentationToast(),
+        if (currWidth > currHeight || currWidth === currHeight) {
+          layoutContextDispatch({
+            type: 'setPresentationOrientation',
+            value: 'landscape',
           });
-        } else {
-          this.currentPresentationToastId = toast(this.renderCurrentPresentationToast(), {
-            onClose: () => { this.currentPresentationToastId = null; },
-            autoClose: shouldCloseToast,
-            className: toastStyles.actionToast,
+        }
+        if (currHeight > currWidth) {
+          layoutContextDispatch({
+            type: 'setPresentationOrientation',
+            value: 'portrait',
           });
         }
       }
 
-      const downloadableOff = prevProps.currentPresentation.downloadable
-        && !currentPresentation.downloadable;
+    const downloadableOn = !prevProps.currentPresentation.downloadable
+      && currentPresentation.downloadable;
 
-      if (this.currentPresentationToastId && downloadableOff) {
+    const shouldCloseToast = !(currentPresentation.downloadable && !userIsPresenter);
+
+    if (
+      prevProps.currentPresentation.name !== currentPresentation.name
+      || (downloadableOn && !userIsPresenter)
+    ) {
+      if (this.currentPresentationToastId) {
         toast.update(this.currentPresentationToastId, {
-          autoClose: true,
+          autoClose: shouldCloseToast,
           render: this.renderCurrentPresentationToast(),
         });
+      } else {
+        this.currentPresentationToastId = toast(this.renderCurrentPresentationToast(), {
+          onClose: () => { this.currentPresentationToastId = null; },
+          autoClose: shouldCloseToast,
+          className: toastStyles.actionToast,
+        });
       }
-
-      if (layoutSwapped && restoreOnUpdate && isViewer && currentSlide) {
-        const slideChanged = currentSlide.id !== prevProps.currentSlide.id;
-        const positionChanged = slidePosition
-          .viewBoxHeight !== prevProps.slidePosition.viewBoxHeight
-          || slidePosition.viewBoxWidth !== prevProps.slidePosition.viewBoxWidth;
-        const pollPublished = publishedPoll && !prevProps.publishedPoll;
-        if (slideChanged || positionChanged || pollPublished) {
-          toggleSwapLayout(layoutContextDispatch);
-        }
-      }
-
-      if (presentationBounds !== prevPresentationBounds) this.onResize();
     }
+
+    const downloadableOff = prevProps.currentPresentation.downloadable
+      && !currentPresentation.downloadable;
+
+    if (this.currentPresentationToastId && downloadableOff) {
+      toast.update(this.currentPresentationToastId, {
+        autoClose: true,
+        render: this.renderCurrentPresentationToast(),
+      });
+    }
+
+    if (layoutSwapped && restoreOnUpdate && isViewer && currentSlide) {
+      const slideChanged = currentSlide.id !== prevProps.currentSlide.id;
+      const positionChanged = slidePosition.viewBoxHeight !== prevProps.slidePosition.viewBoxHeight
+        || slidePosition.viewBoxWidth !== prevProps.slidePosition.viewBoxWidth;
+      const pollPublished = publishedPoll && !prevProps.publishedPoll;
+      if (slideChanged || positionChanged || pollPublished) {
+        toggleSwapLayout();
+      }
+    }
+  }
   }
 
   componentWillUnmount() {
-    const { fullscreenContext, layoutContextDispatch } = this.props;
-
     window.removeEventListener('resize', this.onResize, false);
+    window.removeEventListener('layoutSizesSets', this.onResize, false);
     this.refPresentationContainer.removeEventListener('fullscreenchange', this.onFullscreenChange);
-
-    if (fullscreenContext) {
-      layoutContextDispatch({
-        type: ACTIONS.SET_FULLSCREEN_ELEMENT,
-        value: {
-          element: '',
-          group: '',
-        },
-      });
-    }
-  }
-
-  handleResize() {
-    const presentationSizes = this.getPresentationSizesAvailable();
-    if (Object.keys(presentationSizes).length > 0) {
-      // updating the size of the space available for the slide
-      this.setState({
-        presentationHeight: presentationSizes.presentationHeight,
-        presentationWidth: presentationSizes.presentationWidth,
-      });
-    }
   }
 
   onFullscreenChange() {
+    const { layoutContextDispatch } = this.props;
     const { isFullscreen } = this.state;
     const newIsFullscreen = FullscreenService.isFullScreen(this.refPresentationContainer);
     if (isFullscreen !== newIsFullscreen) {
       this.setState({ isFullscreen: newIsFullscreen });
+      layoutContextDispatch({ type: 'setPresentationFullscreen', value: newIsFullscreen });
     }
-  }
-
-  setPresentationRef(ref) {
-    this.refPresentationContainer = ref;
   }
 
   // returns a ref to the svg element, which is required by a WhiteboardOverlay
@@ -274,29 +286,30 @@ class Presentation extends PureComponent {
   }
 
   getPresentationSizesAvailable() {
+    const { layoutContextState } = this.props;
     const {
-      presentationBounds,
-      presentationAreaSize: newPresentationAreaSize,
-    } = this.props;
+      presentationAreaSize,
+      webcamsAreaResizing,
+      mediaBounds,
+      tempWebcamsAreaSize,
+      webcamsPlacement,
+    } = layoutContextState;
     const presentationSizes = {
-      presentationWidth: 0,
-      presentationHeight: 0,
+      presentationAreaWidth: 0,
+      presentationAreaHeight: 0,
     };
 
-    if (newPresentationAreaSize) {
-      presentationSizes.presentationWidth = newPresentationAreaSize.presentationAreaWidth;
-      presentationSizes.presentationHeight = newPresentationAreaSize
-        .presentationAreaHeight - (this.getToolbarHeight() || 0);
-      return presentationSizes;
-    }
-
-    presentationSizes.presentationWidth = presentationBounds.width;
-    presentationSizes.presentationHeight = presentationBounds.height;
+    presentationSizes.presentationAreaWidth = webcamsAreaResizing && (webcamsPlacement === 'left' || webcamsPlacement === 'right')
+      ? mediaBounds.width - tempWebcamsAreaSize.width
+      : presentationAreaSize.width;
+    presentationSizes.presentationAreaHeight = webcamsAreaResizing && (webcamsPlacement === 'top' || webcamsPlacement === 'bottom')
+      ? mediaBounds.height - tempWebcamsAreaSize.height - (this.getToolbarHeight() || 0) - 30
+      : presentationAreaSize.height - (this.getToolbarHeight() || 0);
     return presentationSizes;
   }
 
   getInitialPresentationSizes() {
-    // determining the presentationWidth and presentationHeight (available
+    // determining the presentationAreaWidth and presentationAreaHeight (available
     // space for the svg) on the initial load
 
     const presentationSizes = this.getPresentationSizesAvailable();
@@ -304,8 +317,8 @@ class Presentation extends PureComponent {
       // setting the state of the available space for the svg
       // and set the showSlide to true to start rendering the slide
       this.setState({
-        presentationHeight: presentationSizes.presentationHeight,
-        presentationWidth: presentationSizes.presentationWidth,
+        presentationAreaHeight: presentationSizes.presentationAreaHeight,
+        presentationAreaWidth: presentationSizes.presentationAreaWidth,
         showSlide: true,
       });
     }
@@ -315,10 +328,21 @@ class Presentation extends PureComponent {
     this.setState({ fitToWidth });
   }
 
+  handleResize() {
+    const presentationSizes = this.getPresentationSizesAvailable();
+    if (Object.keys(presentationSizes).length > 0) {
+      // updating the size of the space available for the slide
+      this.setState({
+        presentationAreaHeight: presentationSizes.presentationAreaHeight,
+        presentationAreaWidth: presentationSizes.presentationAreaWidth,
+      });
+    }
+  }
+
   calculateSize(viewBoxDimensions) {
     const {
-      presentationHeight,
-      presentationWidth,
+      presentationAreaHeight,
+      presentationAreaWidth,
       fitToWidth,
     } = this.state;
 
@@ -341,25 +365,25 @@ class Presentation extends PureComponent {
     let svgHeight;
 
     if (!userIsPresenter) {
-      svgWidth = (presentationHeight * viewBoxWidth) / viewBoxHeight;
-      if (presentationWidth < svgWidth) {
-        svgHeight = (presentationHeight * presentationWidth) / svgWidth;
-        svgWidth = presentationWidth;
+      svgWidth = (presentationAreaHeight * viewBoxWidth) / viewBoxHeight;
+      if (presentationAreaWidth < svgWidth) {
+        svgHeight = (presentationAreaHeight * presentationAreaWidth) / svgWidth;
+        svgWidth = presentationAreaWidth;
       } else {
-        svgHeight = presentationHeight;
+        svgHeight = presentationAreaHeight;
       }
     } else if (!fitToWidth) {
-      svgWidth = (presentationHeight * originalWidth) / originalHeight;
-      if (presentationWidth < svgWidth) {
-        svgHeight = (presentationHeight * presentationWidth) / svgWidth;
-        svgWidth = presentationWidth;
+      svgWidth = (presentationAreaHeight * originalWidth) / originalHeight;
+      if (presentationAreaWidth < svgWidth) {
+        svgHeight = (presentationAreaHeight * presentationAreaWidth) / svgWidth;
+        svgWidth = presentationAreaWidth;
       } else {
-        svgHeight = presentationHeight;
+        svgHeight = presentationAreaHeight;
       }
     } else {
-      svgWidth = presentationWidth;
+      svgWidth = presentationAreaWidth;
       svgHeight = (svgWidth * originalHeight) / originalWidth;
-      if (svgHeight > presentationHeight) svgHeight = presentationHeight;
+      if (svgHeight > presentationAreaHeight) svgHeight = presentationAreaHeight;
     }
 
     if (typeof svgHeight !== 'number' || typeof svgWidth !== 'number') {
@@ -429,26 +453,10 @@ class Presentation extends PureComponent {
 
   renderPresentationClose() {
     const { isFullscreen } = this.state;
-    const {
-      layoutType,
-      fullscreenContext,
-      layoutContextDispatch,
-      isIphone,
-    } = this.props;
-
-    if (!shouldEnableSwapLayout()
-      || isFullscreen
-      || fullscreenContext
-      || layoutType === LAYOUT_TYPE.PRESENTATION_FOCUS) {
+    if (!shouldEnableSwapLayout() || isFullscreen) {
       return null;
     }
-    return (
-      <PresentationCloseButton
-        toggleSwapLayout={MediaService.toggleSwapLayout}
-        layoutContextDispatch={layoutContextDispatch}
-        isIphone={isIphone}
-      />
-    );
+    return <PresentationCloseButton toggleSwapLayout={MediaService.toggleSwapLayout} />;
   }
 
   renderOverlays(slideObj, svgDimensions, viewBoxPosition, viewBoxDimensions, physicalDimensions) {
@@ -519,7 +527,7 @@ class Presentation extends PureComponent {
   }
 
   // renders the whole presentation area
-  renderPresentation(svgDimensions, viewBoxDimensions) {
+  renderPresentationArea(svgDimensions, viewBoxDimensions) {
     const {
       intl,
       podId,
@@ -650,25 +658,15 @@ class Presentation extends PureComponent {
     );
   }
 
-  renderPresentationToolbar(svgWidth) {
+  renderPresentationToolbar() {
     const {
       currentSlide,
       podId,
-      isMobile,
-      layoutType,
-      numCameras,
     } = this.props;
-    const { zoom, fitToWidth } = this.state;
+    const { zoom, fitToWidth, isFullscreen } = this.state;
 
     if (!currentSlide) return null;
 
-    const { presentationToolbarMinWidth } = DEFAULT_VALUES;
-
-    const toolbarWidth = ((this.refWhiteboardArea && svgWidth > presentationToolbarMinWidth)
-      || isMobile
-      || (layoutType === LAYOUT_TYPE.VIDEO_FOCUS && numCameras > 0))
-      ? svgWidth
-      : presentationToolbarMinWidth;
     return (
       <PresentationToolbarContainer
         {...{
@@ -676,8 +674,9 @@ class Presentation extends PureComponent {
           zoom,
           podId,
           currentSlide,
-          toolbarWidth,
         }}
+        isFullscreen={isFullscreen}
+        fullscreenRef={this.refPresentationContainer}
         currentSlideNum={currentSlide.num}
         presentationId={currentSlide.presentationId}
         zoomChanger={this.zoomChanger}
@@ -718,21 +717,19 @@ class Presentation extends PureComponent {
   renderPresentationFullscreen() {
     const {
       intl,
-      fullscreenElementId,
+      userIsPresenter,
     } = this.props;
     const { isFullscreen } = this.state;
 
-    if (!ALLOW_FULLSCREEN) return null;
+    if (userIsPresenter || !ALLOW_FULLSCREEN) return null;
 
     return (
       <FullscreenButtonContainer
         fullscreenRef={this.refPresentationContainer}
         elementName={intl.formatMessage(intlMessages.presentationLabel)}
-        elementId={fullscreenElementId}
         isFullscreen={isFullscreen}
-        color="primary"
-        fullScreenStyle={false}
-        className={styles.presentationFullscreen}
+        dark
+        bottom
       />
     );
   }
@@ -761,7 +758,6 @@ class Presentation extends PureComponent {
             <span className={styles.toastDownload}>
               <div className={toastStyles.separator} />
               <a
-                data-test="toastDownload"
                 className={styles.downloadBtn}
                 aria-label={`${intl.formatMessage(intlMessages.downloadLabel)} ${currentPresentation.name}`}
                 href={downloadPresentationUri}
@@ -771,7 +767,8 @@ class Presentation extends PureComponent {
                 {intl.formatMessage(intlMessages.downloadLabel)}
               </a>
             </span>
-          ) : null}
+          ) : null
+        }
       </div>
     );
   }
@@ -781,16 +778,12 @@ class Presentation extends PureComponent {
       userIsPresenter,
       multiUser,
       slidePosition,
-      presentationBounds,
-      fullscreenContext,
-      isMobile,
-      layoutType,
-      numCameras,
-      currentPresentation,
     } = this.props;
 
     const {
       showSlide,
+      // fitToWidth,
+      // presentationAreaWidth,
       isFullscreen,
       localPosition,
     } = this.state;
@@ -820,45 +813,21 @@ class Presentation extends PureComponent {
 
     const toolbarHeight = this.getToolbarHeight();
 
-    const { presentationToolbarMinWidth } = DEFAULT_VALUES;
-
-    const isLargePresentation = (svgWidth > presentationToolbarMinWidth || isMobile)
-      && !(layoutType === LAYOUT_TYPE.VIDEO_FOCUS && numCameras > 0);
-
-    const containerWidth = isLargePresentation
-      ? svgWidth
-      : presentationToolbarMinWidth;
-
-    if (!currentPresentation && this.refPresentationContainer) {
-      return (
-        <PresentationPlaceholder
-          {
-          ...presentationBounds
-          }
-          setPresentationRef={this.setPresentationRef}
-        />
-      );
+    let toolbarWidth = 0;
+    if (this.refWhiteboardArea) {
+      toolbarWidth = svgWidth;
     }
 
     return (
       <div
         ref={(ref) => { this.refPresentationContainer = ref; }}
         className={styles.presentationContainer}
-        style={{
-          top: presentationBounds.top,
-          left: presentationBounds.left,
-          right: presentationBounds.right,
-          width: presentationBounds.width,
-          height: presentationBounds.height,
-          zIndex: fullscreenContext ? presentationBounds.zIndex : undefined,
-          backgroundColor: '#06172A',
-        }}
       >
         {isFullscreen && <PollingContainer />}
-
+        
         <div
-          ref={(ref) => { this.refPresentation = ref; }}
-          className={styles.presentation}
+          ref={(ref) => { this.refPresentationArea = ref; }}
+          className={styles.presentationArea}
         >
           <div
             ref={(ref) => { this.refWhiteboardArea = ref; }}
@@ -871,7 +840,7 @@ class Presentation extends PureComponent {
             }}
           >
             {showSlide && svgWidth > 0 && svgHeight > 0
-              ? this.renderPresentation(svgDimensions, viewBoxDimensions)
+              ? this.renderPresentationArea(svgDimensions, viewBoxDimensions)
               : null}
             {showSlide && (userIsPresenter || multiUser)
               ? this.renderWhiteboardToolbar(svgDimensions)
@@ -883,11 +852,11 @@ class Presentation extends PureComponent {
                   ref={(ref) => { this.refPresentationToolbar = ref; }}
                   style={
                     {
-                      width: containerWidth,
+                      width: toolbarWidth,
                     }
                   }
                 >
-                  {this.renderPresentationToolbar(svgWidth)}
+                  {this.renderPresentationToolbar()}
                 </div>
               )
               : null}
@@ -898,9 +867,10 @@ class Presentation extends PureComponent {
   }
 }
 
-export default injectIntl(Presentation);
+export default injectIntl(withDraggableConsumer(withLayoutConsumer(PresentationArea)));
 
-Presentation.propTypes = {
+PresentationArea.propTypes = {
+  intl: PropTypes.object.isRequired,
   podId: PropTypes.string.isRequired,
   // Defines a boolean value to detect whether a current user is a presenter
   userIsPresenter: PropTypes.bool.isRequired,
@@ -923,7 +893,7 @@ Presentation.propTypes = {
   multiUser: PropTypes.bool.isRequired,
 };
 
-Presentation.defaultProps = {
+PresentationArea.defaultProps = {
   currentSlide: undefined,
   slidePosition: undefined,
 };

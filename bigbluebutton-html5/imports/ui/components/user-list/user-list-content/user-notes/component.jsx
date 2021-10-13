@@ -4,13 +4,13 @@ import { defineMessages } from 'react-intl';
 import Icon from '/imports/ui/components/icon/component';
 import NoteService from '/imports/ui/components/note/service';
 import { styles } from '/imports/ui/components/user-list/user-list-content/styles';
-import { PANELS } from '../../../layout/enums';
 
 const propTypes = {
   intl: PropTypes.shape({
     formatMessage: PropTypes.func.isRequired,
   }).isRequired,
   revs: PropTypes.number.isRequired,
+  isPanelOpened: PropTypes.bool.isRequired,
 };
 
 const intlMessages = defineMessages({
@@ -43,7 +43,6 @@ class UserNotes extends Component {
     this.state = {
       unread: false,
     };
-    this.setUnread = this.setUnread.bind(this);
   }
 
   componentDidMount() {
@@ -55,14 +54,14 @@ class UserNotes extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { sidebarContentPanel, revs } = this.props;
+    const { isPanelOpened, revs } = this.props;
     const { unread } = this.state;
 
-    if (sidebarContentPanel !== PANELS.SHARED_NOTES && !unread) {
+    if (!isPanelOpened && !unread) {
       if (prevProps.revs !== revs) this.setUnread(true);
     }
 
-    if (sidebarContentPanel === PANELS.SHARED_NOTES && unread) {
+    if (isPanelOpened && unread) {
       this.setUnread(false);
     }
   }
@@ -72,9 +71,7 @@ class UserNotes extends Component {
   }
 
   renderNotes() {
-    const {
-      intl, disableNote, sidebarContentPanel, layoutContextDispatch,
-    } = this.props;
+    const { intl, disableNote } = this.props;
     const { unread } = this.state;
 
     let notification = null;
@@ -98,7 +95,7 @@ class UserNotes extends Component {
         role="button"
         tabIndex={0}
         className={styles.listItem}
-        onClick={() => NoteService.toggleNotePanel(sidebarContentPanel, layoutContextDispatch)}
+        onClick={NoteService.toggleNotePanel}
         onKeyPress={() => { }}
       >
         <Icon iconName="copy" />

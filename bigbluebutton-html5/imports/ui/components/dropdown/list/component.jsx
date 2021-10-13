@@ -11,9 +11,9 @@ const propTypes = {
   /*  We should recheck this proptype, sometimes we need to create an container and send to
    dropdown, but with this proptype, is not possible. */
   children: PropTypes.arrayOf((propValue, key, componentName, propFullName) => {
-    if (propValue[key].type !== ListItem
-      && propValue[key].type !== ListSeparator
-      && propValue[key].type !== ListTitle) {
+    if (propValue[key].type !== ListItem &&
+      propValue[key].type !== ListSeparator &&
+      propValue[key].type !== ListTitle) {
       return new Error(`Invalid prop \`${propFullName}\` supplied to` +
         ` \`${componentName}\`. Validation failed.`);
     }
@@ -41,13 +41,14 @@ export default class DropdownList extends Component {
   }
 
   componentDidMount() {
-    this._menu.addEventListener('keydown', (event) => this.handleItemKeyDown(event));
+    this._menu.addEventListener('keydown', event => this.handleItemKeyDown(event));
   }
 
   componentDidUpdate() {
+
     const { focusedIndex } = this.state;
     const children = [].slice.call(this._menu.children);
-    this.menuRefs = children.filter((child) => child.getAttribute('role') === 'menuitem');
+    this.menuRefs = children.filter(child => child.getAttribute('role') === 'menuitem');
 
     const activeRef = this.menuRefs[focusedIndex];
 
@@ -57,10 +58,7 @@ export default class DropdownList extends Component {
   }
 
   handleItemKeyDown(event, callback) {
-    const {
-      getDropdownMenuParent,
-      horizontal,
-    } = this.props;
+    const { getDropdownMenuParent } = this.props;
     const { focusedIndex } = this.state;
 
     let nextFocusedIndex = focusedIndex > 0 ? focusedIndex : 0;
@@ -69,7 +67,7 @@ export default class DropdownList extends Component {
       nextFocusedIndex = this.menuRefs.indexOf(document.activeElement);
     }
 
-    const isHorizontal = horizontal;
+    const isHorizontal = this.props.horizontal;
     const navigationKeys = {
       previous: KEY_CODES[`ARROW_${isHorizontal ? 'LEFT' : 'UP'}`],
       next: KEY_CODES[`ARROW_${isHorizontal ? 'RIGHT' : 'DOWN'}`],
@@ -128,14 +126,8 @@ export default class DropdownList extends Component {
   }
 
   handleItemClick(event, callback) {
-    const {
-      getDropdownMenuParent,
-      onActionsHide,
-      dropdownHide,
-      keepOpen,
-    } = this.props;
-
-    if (!keepOpen) {
+    const { getDropdownMenuParent, onActionsHide, dropdownHide, keepOpen} = this.props;
+    if(!keepOpen) {
       if (getDropdownMenuParent) {
         onActionsHide();
       } else {
@@ -150,12 +142,7 @@ export default class DropdownList extends Component {
   }
 
   render() {
-    const {
-      children,
-      style,
-      className,
-      horizontal,
-    } = this.props;
+    const { children, style, className } = this.props;
 
     const boundChildren = Children.map(
       children,
@@ -186,7 +173,7 @@ export default class DropdownList extends Component {
       },
     );
 
-    const listDirection = horizontal ? styles.horizontalList : styles.verticalList;
+    const listDirection = this.props.horizontal ? styles.horizontalList : styles.verticalList;
     return (
       <ul
         style={style}

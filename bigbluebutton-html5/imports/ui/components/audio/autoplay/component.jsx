@@ -4,6 +4,7 @@ import Button from '/imports/ui/components/button/component';
 import { defineMessages, injectIntl } from 'react-intl';
 import { styles } from './styles';
 
+
 const intlMessages = defineMessages({
   confirmLabel: {
     id: 'app.audioModal.playAudio',
@@ -17,9 +18,7 @@ const intlMessages = defineMessages({
 
 const propTypes = {
   handleAllowAutoplay: PropTypes.func.isRequired,
-  intl: PropTypes.shape({
-    formatMessage: PropTypes.func.isRequired,
-  }).isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 class AudioAutoplayPrompt extends PureComponent {

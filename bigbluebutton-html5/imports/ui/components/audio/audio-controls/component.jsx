@@ -79,7 +79,6 @@ class AudioControls extends PureComponent {
         hideLabel
         aria-label={intl.formatMessage(intlMessages.joinAudio)}
         label={intl.formatMessage(intlMessages.joinAudio)}
-        data-test="joinAudio"
         color="default"
         ghost
         icon="audio_off"

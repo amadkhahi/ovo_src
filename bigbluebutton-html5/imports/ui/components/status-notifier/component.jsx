@@ -49,10 +49,10 @@ class StatusNotifier extends Component {
 
   componentDidUpdate(prevProps) {
     const {
-      emojiUsers, raiseHandAudioAlert, raiseHandPushAlert, status, isViewer, isPresenter,
+      emojiUsers, raiseHandAudioAlert, raiseHandPushAlert, status, isViewer,
     } = this.props;
 
-    if (isViewer && !isPresenter) {
+    if (isViewer) {
       if (this.statusNotifierId) toast.dismiss(this.statusNotifierId);
       return false;
     }

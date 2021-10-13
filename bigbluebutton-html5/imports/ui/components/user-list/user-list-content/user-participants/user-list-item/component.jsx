@@ -50,7 +50,6 @@ class UserListItem extends PureComponent {
       notify,
       raiseHandAudioAlert,
       raiseHandPushAlert,
-      layoutContextDispatch,
       isRTL,
     } = this.props;
 
@@ -88,7 +87,6 @@ class UserListItem extends PureComponent {
           notify,
           raiseHandAudioAlert,
           raiseHandPushAlert,
-          layoutContextDispatch,
           isRTL,
         }}
       />

@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import cx from 'classnames';
 import _ from 'lodash';
 import { styles } from '../styles';
+
+const propTypes = {
+  description: PropTypes.string,
+};
 
 export default class DropdownListTitle extends Component {
   constructor(props) {
@@ -10,15 +15,14 @@ export default class DropdownListTitle extends Component {
   }
 
   render() {
-    const {
-      className,
-      children,
-    } = this.props;
+    const { className } = this.props;
 
     return (
       <li className={cx(styles.title, className)} aria-hidden>
-        {children}
+        {this.props.children}
       </li>
     );
   }
 }
+
+DropdownListTitle.propTypes = propTypes;

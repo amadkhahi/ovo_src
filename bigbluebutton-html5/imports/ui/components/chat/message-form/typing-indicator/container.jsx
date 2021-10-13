@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import Auth from '/imports/ui/services/auth';
 import { UsersTyping } from '/imports/api/group-chat-msg';
@@ -11,9 +11,16 @@ const USER_CONFIG = Meteor.settings.public.user;
 const PUBLIC_CHAT_KEY = CHAT_CONFIG.public_id;
 const TYPING_INDICATOR_ENABLED = CHAT_CONFIG.typingIndicator.enabled;
 
-const TypingIndicatorContainer = props => <TypingIndicator {...props} />;
+class TypingIndicatorContainer extends PureComponent {
+  render() {
+    return (
+      <TypingIndicator {...this.props} />
+    );
+  }
+}
 
-export default withTracker(({ idChatOpen }) => {
+export default withTracker(() => {
+  const idChatOpen = Session.get('idChatOpen');
   const meeting = Meetings.findOne({ meetingId: Auth.meetingID }, {
     fields: {
       'lockSettingsProps.hideUserList': 1,

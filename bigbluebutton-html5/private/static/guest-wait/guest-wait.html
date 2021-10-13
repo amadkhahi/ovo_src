@@ -179,11 +179,7 @@
                 if (!response.ok) {
                   return resolve(false);
                 }
-                return response.json()
-                  .then((jsonResponse) => resolve(jsonResponse))
-                  .catch(() => {
-                    resolve(false);
-                  });
+                return resolve(response.json());
               });
           });
 
@@ -196,11 +192,7 @@
                 if (!response.ok) {
                   return resolve(false);
                 }
-                return response.json()
-                  .then((jsonResponse) => resolve(jsonResponse))
-                  .catch(() => {
-                    resolve(false);
-                  });
+                return resolve(response.json());
               });
           });
 

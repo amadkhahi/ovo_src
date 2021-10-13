@@ -9,8 +9,7 @@ const ROLE_MODERATOR = Meteor.settings.public.user.role_moderator;
 
 function currentUser() {
   if (!this.userId) {
-    Mongo.Collection._publishCursor(Users.find({ meetingId: '' }), this, 'current-user');
-    return this.ready();
+    return Users.find({ meetingId: '' });
   }
   const { meetingId, requesterUserId } = extractCredentials(this.userId);
 
@@ -29,8 +28,8 @@ function currentUser() {
       authToken: false, // Not asking for authToken from client side but also not exposing it
     },
   };
-  Mongo.Collection._publishCursor(Users.find(selector, options), this, 'current-user');
-  return this.ready();
+
+  return Users.find(selector, options);
 }
 
 function publishCurrentUser(...args) {
@@ -40,7 +39,7 @@ function publishCurrentUser(...args) {
 
 Meteor.publish('current-user', publishCurrentUser);
 
-function users() {
+function users(role) {
   const tokenValidation = AuthTokenValidation.findOne({ connectionId: this.connection.id });
 
   if (!tokenValidation || tokenValidation.validationStatus !== ValidationStates.VALIDATED) {

@@ -5,9 +5,7 @@ import { defineMessages, injectIntl } from 'react-intl';
 import { styles } from './styles.scss';
 
 const propTypes = {
-  intl: PropTypes.shape({
-    formatMessage: PropTypes.func.isRequired,
-  }).isRequired,
+  intl: PropTypes.object.isRequired,
   handlePlayAudioSample: PropTypes.func.isRequired,
   outputDeviceId: PropTypes.string,
 };
@@ -40,9 +38,9 @@ class AudioTest extends React.Component {
       <Button
         className={styles.testAudioBtn}
         label={intl.formatMessage(intlMessages.playSoundLabel)}
-        icon="unmute"
-        size="sm"
-        color="primary"
+        icon={'unmute'}
+        size={'sm'}
+        color={'primary'}
         onClick={() => this.handlePlayAudioSample(outputDeviceId)}
       />
     );

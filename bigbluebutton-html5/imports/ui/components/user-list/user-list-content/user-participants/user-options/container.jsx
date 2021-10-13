@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Auth from '/imports/ui/services/auth';
 import Meetings from '/imports/api/meetings';
 import ActionsBarService from '/imports/ui/components/actions-bar/service';
-import LearningDashboardService from '/imports/ui/components/learning-dashboard/service';
 import UserListService from '/imports/ui/components/user-list/service';
 import WaitingUsersService from '/imports/ui/components/waiting-users/service';
 import logger from '/imports/startup/client/logger';
@@ -24,7 +23,7 @@ const intlMessages = defineMessages({
   },
 });
 
-const { dynamicGuestPolicy } = Meteor.settings.public.app;
+const dynamicGuestPolicy = Meteor.settings.public.app.dynamicGuestPolicy;
 
 const meetingMuteDisabledLog = () => logger.info({
   logCode: 'useroptions_unmute_all',
@@ -92,8 +91,6 @@ const UserOptionsContainer = withTracker((props) => {
     guestPolicy: WaitingUsersService.getGuestPolicy(),
     isMeteorConnected: Meteor.status().connected,
     meetingName: getMeetingName(),
-    learningDashboardAccessToken: LearningDashboardService.getLearningDashboardAccessToken(),
-    openLearningDashboardUrl: LearningDashboardService.openLearningDashboardUrl,
     dynamicGuestPolicy,
   };
 })(UserOptions);

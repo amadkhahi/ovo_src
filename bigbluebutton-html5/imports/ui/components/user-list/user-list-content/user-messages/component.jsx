@@ -138,7 +138,7 @@ class UserMessages extends PureComponent {
           className={styles.scrollableList}
           ref={(ref) => { this._msgsList = ref; }}
         >
-          <div className={styles.list} aria-live="polite">
+          <div className={styles.list}>
             <TransitionGroup ref={(ref) => { this._msgItems = ref; }}>
               {this.getActiveChats()}
             </TransitionGroup>

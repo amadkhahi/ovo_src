@@ -82,7 +82,7 @@ class ErrorScreen extends PureComponent {
 
     return (
       <div className={styles.background}>
-        <h1 className={styles.message} data-test="errorScreenMessage">
+        <h1 className={styles.message}>
           {formatedMessage}
         </h1>
         {

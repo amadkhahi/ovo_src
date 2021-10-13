@@ -23,12 +23,6 @@ const intlMessages = defineMessages({
   pollQuestionTitle: {
     id: 'app.polling.pollQuestionTitle',
   },
-  responseIsSecret: {
-    id: 'app.polling.responseSecret',
-  },
-  responseNotSecret: {
-    id: 'app.polling.responseNotSecret',
-  },
   submitLabel: {
     id: 'app.polling.submitLabel',
   },
@@ -141,7 +135,8 @@ class Polling extends Component {
             poll.pollType !== pollTypes.Response && (
               <span>
                 {
-                  question.length === 0 && (
+                  question.length === 0
+                  && (
                     <div className={styles.pollingTitle}>
                       {intl.formatMessage(intlMessages.pollingTitleLabel)}
                     </div>
@@ -224,9 +219,6 @@ class Polling extends Component {
               </div>
             )
           }
-          <div className={styles.pollingSecret}>
-            {intl.formatMessage(poll.secretPoll ? intlMessages.responseIsSecret : intlMessages.responseNotSecret)}
-          </div>
         </div>
       </div>
     );

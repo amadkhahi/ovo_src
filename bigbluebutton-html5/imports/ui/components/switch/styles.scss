@@ -14,8 +14,8 @@
 }
 
 .invertBackground {
-    background-color: var(--color-success) !important;
+    background-color: #008081 !important;
     &.checked {
-        background-color: var(--color-danger) !important;
+        background-color: #DF2721 !important;
     }
 }

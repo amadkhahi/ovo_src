@@ -5,7 +5,6 @@ import { UsersContext } from '../users-context/context';
 import { makeCall } from '/imports/ui/services/api';
 import ChatLogger from '/imports/ui/components/chat/chat-logger/ChatLogger';
 import Auth from '/imports/ui/services/auth';
-import CollectionEventsBroker from '/imports/ui/services/collection-hooks-callbacks/collection-hooks-callbacks';
 
 let prevUserData = {};
 let currentUserData = {};
@@ -17,7 +16,6 @@ const CHAT_CLEAR_MESSAGE = CHAT_CONFIG.system_messages_keys.chat_clear;
 const ITENS_PER_PAGE = CHAT_CONFIG.itemsPerPage;
 const TIME_BETWEEN_FETCHS = CHAT_CONFIG.timeBetweenFetchs;
 const EVENT_NAME = 'bbb-group-chat-messages-subscription-has-stoppped';
-const EVENT_NAME_SUBSCRIPTION_READY = 'bbb-group-chat-messages-subscriptions-ready';
 
 const getMessagesBeforeJoinCounter = async () => {
   const counter = await makeCall('chatMessageBeforeJoinCounter');
@@ -26,8 +24,7 @@ const getMessagesBeforeJoinCounter = async () => {
 
 const startSyncMessagesbeforeJoin = async (dispatch) => {
   const chatsMessagesCount = await getMessagesBeforeJoinCounter();
-  const pagesPerChat = chatsMessagesCount
-    .map((chat) => ({ ...chat, pages: Math.ceil(chat.count / ITENS_PER_PAGE), syncedPages: 0 }));
+  const pagesPerChat = chatsMessagesCount.map(chat => ({ ...chat, pages: Math.ceil(chat.count / ITENS_PER_PAGE), syncedPages: 0 }));
 
   const syncRoutine = async (chatsToSync) => {
     if (!chatsToSync.length) return;
@@ -52,8 +49,9 @@ const startSyncMessagesbeforeJoin = async (dispatch) => {
       });
     }
 
-    await new Promise((r) => setTimeout(r, TIME_BETWEEN_FETCHS));
-    syncRoutine(pagesToFetch.filter((chat) => !(chat.syncedPages > chat.pages)));
+
+    await new Promise(r => setTimeout(r, TIME_BETWEEN_FETCHS));
+    syncRoutine(pagesToFetch.filter(chat => !(chat.syncedPages > chat.pages)));
   };
   syncRoutine(pagesPerChat);
 };
@@ -64,7 +62,6 @@ const Adapter = () => {
   const usingUsersContext = useContext(UsersContext);
   const { users } = usingUsersContext;
   const [syncStarted, setSync] = useState(true);
-  const [subscriptionReady, setSubscriptionReady] = useState(false);
   ChatLogger.trace('chatAdapter::body::users', users[Auth.meetingID]);
 
   useEffect(() => {
@@ -77,26 +74,22 @@ const Adapter = () => {
         });
       }
     });
-
-    window.addEventListener(EVENT_NAME_SUBSCRIPTION_READY, () => {
-      setSubscriptionReady(true);
-    });
   }, []);
 
   useEffect(() => {
     const connectionStatus = Meteor.status();
-    if (connectionStatus.connected && !syncStarted && Auth.userID && subscriptionReady) {
-      setTimeout(() => {
-        setSync(true);
-        startSyncMessagesbeforeJoin(dispatch);
-      }, 1000);
+    if (connectionStatus.connected && !syncStarted && Auth.userID) {
+      setSync(true);
+
+      startSyncMessagesbeforeJoin(dispatch);
     }
-  }, [Meteor.status().connected, syncStarted, Auth.userID, subscriptionReady]);
+  }, [Meteor.status().connected, syncStarted, Auth.userID]);
+
 
   /* needed to prevent an issue with dupĺicated messages when user role is changed
   more info: https://github.com/bigbluebutton/bigbluebutton/issues/11842 */
   useEffect(() => {
-    if (users[Auth.meetingID]) {
+    if (users[Auth.meetingID] && users[Auth.meetingID][Auth.userID]) {
       if (currentUserData?.role !== users[Auth.meetingID][Auth.userID].role) {
         prevUserData = currentUserData;
       }
@@ -120,19 +113,23 @@ const Adapter = () => {
       });
     }, 1000, { trailing: true, leading: true });
 
-    const insertToContext = (fields) => {
-      if (fields.id === `${SYSTEM_CHAT_TYPE}-${CHAT_CLEAR_MESSAGE}`) {
-        messageQueue = [];
-        dispatch({
-          type: ACTIONS.REMOVED,
-        });
+    Meteor.connection._stream.socket.addEventListener('message', (msg) => {
+      if (msg.data.indexOf('{"msg":"added","collection":"group-chat-msg"') != -1) {
+        const parsedMsg = JSON.parse(msg.data);
+        if (parsedMsg.msg === 'added') {
+          const { fields } = parsedMsg;
+          if (fields.id === `${SYSTEM_CHAT_TYPE}-${CHAT_CLEAR_MESSAGE}`) {
+            messageQueue = [];
+            dispatch({
+              type: ACTIONS.REMOVED,
+            });
+          }
+
+          messageQueue.push(fields);
+          throttledDispatch();
+        }
       }
-
-      messageQueue.push(fields);
-      throttledDispatch();
-    };
-
-    CollectionEventsBroker.addListener('group-chat-msg', 'added', insertToContext);
+    });
   }, [Meteor.status().connected, Meteor.connection._lastSessionId]);
 
   return null;

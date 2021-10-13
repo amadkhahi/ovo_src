@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { Session } from 'meteor/session';
 import { defineMessages, injectIntl } from 'react-intl';
 import injectWbResizeEvent from '/imports/ui/components/presentation/resize-wrapper/component';
 import Button from '/imports/ui/components/button/component';
-import NoteService from '/imports/ui/components/note/service';
+import NoteService from './service';
 import { styles } from './styles';
-import { PANELS, ACTIONS } from '../layout/enums';
 
 const intlMessages = defineMessages({
   hideNoteLabel: {
@@ -47,8 +47,6 @@ class Note extends Component {
       isLocked,
       intl,
       isRTL,
-      layoutContextDispatch,
-      isResizing,
     } = this.props;
 
     const url = isLocked ? this.readOnlyURL : this.noteURL;
@@ -64,14 +62,8 @@ class Note extends Component {
           >
             <Button
               onClick={() => {
-                layoutContextDispatch({
-                  type: ACTIONS.SET_SIDEBAR_CONTENT_IS_OPEN,
-                  value: false,
-                });
-                layoutContextDispatch({
-                  type: ACTIONS.SET_SIDEBAR_CONTENT_PANEL,
-                  value: PANELS.NONE,
-                });
+                Session.set('openPanel', 'userlist');
+                window.dispatchEvent(new Event('panelChanged'));
               }}
               data-test="hideNoteLabel"
               aria-label={intl.formatMessage(intlMessages.hideNoteLabel)}
@@ -85,9 +77,6 @@ class Note extends Component {
           title="etherpad"
           src={url}
           aria-describedby="sharedNotesEscapeHint"
-          style={{
-            pointerEvents: isResizing ? 'none' : 'inherit',
-          }}
         />
         <span id="sharedNotesEscapeHint" className={styles.hint} aria-hidden>
           {intl.formatMessage(intlMessages.tipLabel)}

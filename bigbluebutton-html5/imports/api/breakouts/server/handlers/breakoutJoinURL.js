@@ -15,51 +15,24 @@ export default function handleBreakoutJoinURL({ body }) {
     breakoutId,
   };
 
-  // only keep each users' last invitation
-  const newUsers = [];
-
-  const currentBreakout = Breakouts.findOne({ breakoutId }, { fields: { users: 1 } });
-
-  currentBreakout.users.forEach((item) => {
-    if (item.userId !== userId) {
-      newUsers.push(item);
-    }
-  });
-
-  newUsers.push({
-    userId,
-    redirectToHtml5JoinURL,
-    insertedTime: new Date().getTime(),
-  });
-
   const modifier = {
-    $set: {
-      users: newUsers,
+    $push: {
+      users: {
+        userId,
+        redirectToHtml5JoinURL,
+        insertedTime: new Date().getTime(),
+      },
     },
   };
 
   try {
-    const ATTEMPT_EVERY_MS = 1000;
+    const { insertedId, numberAffected } = Breakouts.upsert(selector, modifier);
 
-    let numberAffected = 0;
-
-    const updateBreakout = Meteor.bindEnvironment(() => {
-      numberAffected = Breakouts.update(selector, modifier);
-    });
-
-    const updateBreakoutPromise = new Promise((resolve) => {
-      const updateBreakoutInterval = setInterval(() => {
-        updateBreakout();
-
-        if (numberAffected) {
-          resolve(clearInterval(updateBreakoutInterval));
-        }
-      }, ATTEMPT_EVERY_MS);
-    });
-
-    updateBreakoutPromise.then(() => {
+    if (insertedId) {
+      Logger.info(`Added breakout id=${breakoutId}`);
+    } else if (numberAffected) {
       Logger.info(`Upserted breakout id=${breakoutId}`);
-    });
+    }
   } catch (err) {
     Logger.error(`Adding breakout to collection: ${err}`);
   }

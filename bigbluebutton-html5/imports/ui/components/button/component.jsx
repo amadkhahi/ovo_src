@@ -5,7 +5,6 @@ import TooltipContainer from '/imports/ui/components/tooltip/container';
 import { styles } from './styles';
 import Icon from '../icon/component';
 import BaseButton from './base/component';
-import ButtonEmoji from './button-emoji/ButtonEmoji';
 
 const SIZES = [
   'jumbo', 'lg', 'md', 'sm',
@@ -125,18 +124,6 @@ export default class Button extends BaseButton {
     return remainingProps;
   }
 
-  hasButtonEmojiComponent() {
-    const { children } = this.props;
-
-    if (!children) return false;
-
-    const buttonEmoji = React.Children.only(children);
-
-    return (buttonEmoji && buttonEmoji.type && buttonEmoji.type.name)
-      ? (buttonEmoji.type.name === ButtonEmoji.name)
-      : false;
-  }
-
   render() {
     const {
       circle,
@@ -193,7 +180,6 @@ export default class Button extends BaseButton {
       className,
       size,
       iconRight,
-      children,
       ...otherProps
     } = this.props;
 
@@ -204,23 +190,13 @@ export default class Button extends BaseButton {
         className={cx(styles[size], styles.buttonWrapper, className)}
         {...remainingProps}
       >
-        {this.renderButtonEmojiSibling()}
         {!iconRight ? null : this.renderLabel()}
         <span className={cx(this._getClassNames())}>
           {this.renderIcon()}
         </span>
         {iconRight ? null : this.renderLabel()}
-        {this.hasButtonEmojiComponent() ? children : null}
       </BaseButton>
     );
-  }
-
-  renderButtonEmojiSibling() {
-    if (!this.hasButtonEmojiComponent()) {
-      return null;
-    }
-
-    return (<span className={styles.emojiButtonSibling} />);
   }
 
   renderIcon() {
@@ -249,7 +225,7 @@ export default class Button extends BaseButton {
     return (
       <span className={cx(classNames)}>
         {label}
-        {!this.hasButtonEmojiComponent() ? this.props.children : null}
+        {this.props.children}
       </span>
     );
   }

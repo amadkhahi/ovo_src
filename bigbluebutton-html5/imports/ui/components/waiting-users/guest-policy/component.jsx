@@ -22,10 +22,6 @@ const intlMessages = defineMessages({
     id: 'app.guest-policy.description',
     description: 'Guest policy description',
   },
-  policyBtnDesc: {
-    id: 'app.guest-policy.policyBtnDesc',
-    description: 'aria description for guest policy button',
-  },
   askModerator: {
     id: 'app.guest-policy.button.askModerator',
     description: 'Ask moderator button label',
@@ -50,12 +46,6 @@ const propTypes = {
 };
 
 class GuestPolicyComponent extends PureComponent {
-  componentWillUnmount() {
-    const { closeModal } = this.props;
-
-    closeModal();
-  }
-
   render() {
     const {
       closeModal,
@@ -88,11 +78,9 @@ class GuestPolicyComponent extends PureComponent {
           <div className={styles.content}>
             <Button
               color="primary"
-              className={[styles.button, guestPolicy === ASK_MODERATOR && styles.active].join(' ')}
+              className={styles.button}
               disabled={guestPolicy === ASK_MODERATOR}
               label={intl.formatMessage(intlMessages.askModerator)}
-              aria-describedby={guestPolicy === ASK_MODERATOR ? 'selected-btn-desc' : 'policy-btn-desc'}
-              aria-pressed={guestPolicy === ASK_MODERATOR}
               data-test="askModerator"
               onClick={() => {
                 changeGuestPolicy(ASK_MODERATOR);
@@ -101,11 +89,9 @@ class GuestPolicyComponent extends PureComponent {
             />
             <Button
               color="primary"
-              className={[styles.button, guestPolicy === ALWAYS_ACCEPT && styles.active].join(' ')}
+              className={styles.button}
               disabled={guestPolicy === ALWAYS_ACCEPT}
               label={intl.formatMessage(intlMessages.alwaysAccept)}
-              aria-describedby={guestPolicy === ALWAYS_ACCEPT ? 'selected-btn-desc' : 'policy-btn-desc'}
-              aria-pressed={guestPolicy === ALWAYS_ACCEPT}
               data-test="alwaysAccept"
               onClick={() => {
                 changeGuestPolicy(ALWAYS_ACCEPT);
@@ -114,20 +100,15 @@ class GuestPolicyComponent extends PureComponent {
             />
             <Button
               color="primary"
-              className={[styles.button, guestPolicy === ALWAYS_DENY && styles.active].join(' ')}
+              className={styles.button}
               disabled={guestPolicy === ALWAYS_DENY}
               label={intl.formatMessage(intlMessages.alwaysDeny)}
-              aria-describedby={guestPolicy === ALWAYS_DENY ? 'selected-btn-desc' : 'policy-btn-desc'}
-              aria-pressed={guestPolicy === ALWAYS_DENY}
               data-test="alwaysDeny"
               onClick={() => {
                 changeGuestPolicy(ALWAYS_DENY);
                 closeModal();
               }}
             />
-          </div>
-          <div id="policy-btn-desc" aria-hidden className="sr-only">
-            {intl.formatMessage(intlMessages.policyBtnDesc)}
           </div>
         </div>
       </Modal>

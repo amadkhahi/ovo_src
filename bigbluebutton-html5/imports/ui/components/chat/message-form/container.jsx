@@ -1,40 +1,37 @@
-import React from 'react';
+import React, { PureComponent } from 'react';
+import { withTracker } from 'meteor/react-meteor-data';
 import _ from 'lodash';
 import { makeCall } from '/imports/ui/services/api';
-import MessageForm from './component';
-import ChatService from '/imports/ui/components/chat/service';
-import { layoutSelect } from '../../layout/context';
+import ChatForm from './component';
+import ChatService from '../service';
 
 const CHAT_CONFIG = Meteor.settings.public.chat;
 const START_TYPING_THROTTLE_INTERVAL = 2000;
 
-const MessageFormContainer = (props) => {
-  const idChatOpen = layoutSelect((i) => i.idChatOpen);
+class ChatContainer extends PureComponent {
+  render() {
+    return (
+      <ChatForm {...this.props} />
+    );
+  }
+}
 
-  const handleSendMessage = (message) => {
+export default withTracker(() => {
+  const cleanScrollAndSendMessage = (message) => {
     ChatService.setUserSentMessage(true);
-    return ChatService.sendGroupMessage(message, idChatOpen);
+    return ChatService.sendGroupMessage(message);
   };
-  const startUserTyping = _.throttle(
-    (chatId) => makeCall('startUserTyping', chatId),
-    START_TYPING_THROTTLE_INTERVAL,
-  );
+
+  const startUserTyping = chatId => makeCall('startUserTyping', chatId);
+
   const stopUserTyping = () => makeCall('stopUserTyping');
 
-  return (
-    <MessageForm
-      {...{
-        startUserTyping,
-        stopUserTyping,
-        UnsentMessagesCollection: ChatService.UnsentMessagesCollection,
-        minMessageLength: CHAT_CONFIG.min_message_length,
-        maxMessageLength: CHAT_CONFIG.max_message_length,
-        handleSendMessage,
-        idChatOpen,
-        ...props,
-      }}
-    />
-  );
-};
-
-export default MessageFormContainer;
+  return {
+    startUserTyping: _.throttle(startUserTyping, START_TYPING_THROTTLE_INTERVAL),
+    stopUserTyping,
+    UnsentMessagesCollection: ChatService.UnsentMessagesCollection,
+    minMessageLength: CHAT_CONFIG.min_message_length,
+    maxMessageLength: CHAT_CONFIG.max_message_length,
+    handleSendMessage: cleanScrollAndSendMessage,
+  };
+})(ChatContainer);

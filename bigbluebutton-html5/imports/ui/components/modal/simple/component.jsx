@@ -59,26 +59,13 @@ class ModalSimple extends Component {
       ...otherProps
     } = this.props;
 
-    const closeModal = (onRequestClose || this.handleDismiss);
+    const closeModel = (onRequestClose || this.handleDismiss);
 
-    const handleRequestClose = (event) => {
-      closeModal();
-
-      if (event) {
-        event.persist();
-
-        if (event.type === 'click') {
-          setTimeout(() => {
-            document.activeElement.blur();
-          }, 0);
-        }
-      }
-    }
     return (
       <ModalBase
         isOpen={modalisOpen}
         className={cx(className, styles.modal)}
-        onRequestClose={handleRequestClose}
+        onRequestClose={closeModel}
         contentLabel={title || contentLabel}
         {...otherProps}
       >
@@ -92,7 +79,7 @@ class ModalSimple extends Component {
               icon="close"
               circle
               hideLabel
-              onClick={handleRequestClose}
+              onClick={closeModel}
               aria-describedby="modalDismissDescription"
             />
           ) : null}

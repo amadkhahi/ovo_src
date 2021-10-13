@@ -8,31 +8,10 @@ import {
   isGloballyBroadcasting,
 } from './service';
 import ScreenshareComponent from './component';
-import { layoutSelect, layoutSelectOutput, layoutDispatch } from '../layout/context';
 
 const ScreenshareContainer = (props) => {
-  const screenShare = layoutSelectOutput((i) => i.screenShare);
-  const fullscreen = layoutSelect((i) => i.fullscreen);
-  const layoutContextDispatch = layoutDispatch();
-
-  const { element } = fullscreen;
-  const fullscreenElementId = 'Screenshare';
-  const fullscreenContext = (element === fullscreenElementId);
-
   if (isVideoBroadcasting()) {
-    return (
-      <ScreenshareComponent
-        {
-        ...{
-          layoutContextDispatch,
-          ...props,
-          ...screenShare,
-          fullscreenContext,
-          fullscreenElementId,
-        }
-        }
-      />
-    );
+    return <ScreenshareComponent {...props} />;
   }
   return null;
 };

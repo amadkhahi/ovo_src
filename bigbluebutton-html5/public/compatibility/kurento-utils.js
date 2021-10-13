@@ -38,13 +38,7 @@ function noop(error) {
         logger.error(error);
 }
 function trackStop(track) {
-  if (track && typeof track.stop === 'function' && track.readyState !== 'ended') {
-      track.stop();
-      // Manually emit the event as a safeguard; Firefox doesn't fire it when it
-      // should with live MediaStreamTracks...
-      const trackStoppedEvt = new MediaStreamTrackEvent('ended', { track });
-      track.dispatchEvent(trackStoppedEvt);
-  }
+    track && track.stop && track.stop();
 }
 function streamStop(stream) {
     let track = stream.track;

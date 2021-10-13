@@ -11,7 +11,6 @@ const propTypes = {
   label: PropTypes.string,
   description: PropTypes.string,
   accessKey: PropTypes.string,
-  tabIndex: PropTypes.number,
 };
 
 const defaultProps = {
@@ -53,22 +52,13 @@ class DropdownListItem extends Component {
 
   render() {
     const {
-      id,
-      label,
-      description,
-      children,
-      injectRef,
-      tabIndex,
-      onClick,
-      onKeyDown,
-      className,
-      style,
-      intl,
-      'data-test': dataTest,
+      id, label, description, children, injectRef, tabIndex, onClick, onKeyDown,
+      className, style, intl,
     } = this.props;
 
     const isSelected = className && className.includes('emojiSelected');
     const _label = isSelected ? `${label} (${intl.formatMessage(messages.activeAriaLabel)})` : label;
+
     return (
       <li
         id={id}
@@ -81,7 +71,7 @@ class DropdownListItem extends Component {
         className={cx(styles.item, className)}
         style={style}
         role="menuitem"
-        data-test={dataTest}
+        data-test={this.props['data-test']}
       >
         {
           children || this.renderDefault()

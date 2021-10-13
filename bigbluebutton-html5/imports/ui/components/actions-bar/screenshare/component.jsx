@@ -112,7 +112,7 @@ const getErrorLocale = (errorCode) => {
     default:
       return intlMessages.retryError;
   }
-};
+}
 
 const ScreenshareButton = ({
   intl,
@@ -128,7 +128,7 @@ const ScreenshareButton = ({
   const handleFailure = (error) => {
     const {
       errorCode = SCREENSHARING_ERRORS.UNKNOWN_ERROR.errorCode,
-      errorMessage,
+      errorMessage
     } = error;
 
     logger.error({
@@ -141,20 +141,22 @@ const ScreenshareButton = ({
     screenshareHasEnded();
   };
 
-  const renderScreenshareUnavailableModal = () => mountModal(
-    <Modal
-      overlayClassName={styles.overlay}
-      className={styles.modal}
-      onRequestClose={() => mountModal(null)}
-      hideBorder
-      contentLabel={intl.formatMessage(intlMessages.screenShareUnavailable)}
-    >
-      <h3 className={styles.title}>
-        {intl.formatMessage(intlMessages.screenShareUnavailable)}
-      </h3>
-      <p>{intl.formatMessage(intlMessages.screenShareNotSupported)}</p>
-    </Modal>,
-  );
+  const renderScreenshareUnavailableModal = () => {
+    return mountModal(
+      <Modal
+        overlayClassName={styles.overlay}
+        className={styles.modal}
+        onRequestClose={() => mountModal(null)}
+        hideBorder
+        contentLabel={intl.formatMessage(intlMessages.screenShareUnavailable)}
+      >
+        <h3 className={styles.title}>
+          {intl.formatMessage(intlMessages.screenShareUnavailable)}
+        </h3>
+        <p>{intl.formatMessage(intlMessages.screenShareNotSupported)}</p>
+      </Modal>
+    )
+  };
 
   const screenshareLocked = screenshareDataSavingSetting
     ? intlMessages.desktopShareLabel : intlMessages.lockedDesktopShareLabel;
@@ -175,7 +177,6 @@ const ScreenshareButton = ({
         className={cx(isVideoBroadcasting || styles.btn)}
         disabled={(!isMeteorConnected && !isVideoBroadcasting) || !screenshareDataSavingSetting}
         icon={isVideoBroadcasting ? 'desktop' : 'desktop_off'}
-        data-test={isVideoBroadcasting ? 'stopScreenShare' : 'startScreenShare'}
         label={intl.formatMessage(vLabel)}
         description={intl.formatMessage(vDescr)}
         color={isVideoBroadcasting ? 'primary' : 'default'}
@@ -191,7 +192,8 @@ const ScreenshareButton = ({
             } else {
               shareScreen(handleFailure);
             }
-          }}
+          }
+        }
         id={isVideoBroadcasting ? 'unshare-screen-button' : 'share-screen-button'}
       />
     ) : null;

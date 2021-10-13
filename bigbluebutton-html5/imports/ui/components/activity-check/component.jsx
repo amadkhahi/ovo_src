@@ -6,13 +6,11 @@ import Button from '/imports/ui/components/button/component';
 import Modal from '/imports/ui/components/modal/simple/component';
 import { makeCall } from '/imports/ui/services/api';
 
-import { Meteor } from 'meteor/meteor';
 import { styles } from './styles';
+import { Meteor } from "meteor/meteor";
 
 const propTypes = {
-  intl: PropTypes.shape({
-    formatMessage: PropTypes.func.isRequired,
-  }).isRequired,
+  intl: PropTypes.object.isRequired,
   responseDelay: PropTypes.number.isRequired,
 };
 
@@ -66,7 +64,7 @@ class ActivityCheck extends Component {
     const { responseDelay } = this.state;
 
     return setInterval(() => {
-      if (responseDelay === 0) return;
+      if(responseDelay == 0) return;
 
       const remainingTime = responseDelay - 1;
 

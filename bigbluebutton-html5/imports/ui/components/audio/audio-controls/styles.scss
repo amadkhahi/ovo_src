@@ -4,11 +4,6 @@
 .container {
   display: flex;
   flex-flow: row;
-  position: relative;
-
-  > div {
-    position: relative;
-  }
 
   .muteToggle {
     margin-right: var(--sm-padding-x);
@@ -99,5 +94,5 @@
 }
 
 .selectedDevice {
-  font-weight: bold !important;
+  font-weight: bold;
 }

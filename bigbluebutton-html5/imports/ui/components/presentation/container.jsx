@@ -2,41 +2,20 @@ import React, { useContext } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import MediaService, { getSwapLayout, shouldEnableSwapLayout } from '/imports/ui/components/media/service';
 import { notify } from '/imports/ui/services/notification';
-import PresentationService from './service';
+import PresentationAreaService from './service';
 import { Slides } from '/imports/api/slides';
-import Presentation from '/imports/ui/components/presentation/component';
+import PresentationArea from './component';
 import PresentationToolbarService from './presentation-toolbar/service';
 import { UsersContext } from '../components-data/users-context/context';
 import Auth from '/imports/ui/services/auth';
 import Meetings from '/imports/api/meetings';
 import getFromUserSettings from '/imports/ui/services/users-settings';
-import {
-  layoutSelect,
-  layoutSelectInput,
-  layoutSelectOutput,
-  layoutDispatch,
-} from '../layout/context';
 import WhiteboardService from '/imports/ui/components/whiteboard/service';
-import { DEVICE_TYPE } from '../layout/enums';
 
 const ROLE_VIEWER = Meteor.settings.public.user.role_viewer;
 
-const PresentationContainer = ({ presentationPodIds, mountPresentation, ...props }) => {
+const PresentationAreaContainer = ({ presentationPodIds, mountPresentationArea, ...props }) => {
   const { layoutSwapped, podId } = props;
-
-  const cameraDock = layoutSelectInput((i) => i.cameraDock);
-  const presentation = layoutSelectOutput((i) => i.presentation);
-  const layoutType = layoutSelect((i) => i.layoutType);
-  const fullscreen = layoutSelect((i) => i.fullscreen);
-  const deviceType = layoutSelect((i) => i.deviceType);
-  const layoutContextDispatch = layoutDispatch();
-
-  const { numCameras } = cameraDock;
-  const { element } = fullscreen;
-  const fullscreenElementId = 'Presentation';
-  const fullscreenContext = (element === fullscreenElementId);
-
-  const isIphone = !!(navigator.userAgent.match(/iPhone/i));
 
   const usingUsersContext = useContext(UsersContext);
   const { users } = usingUsersContext;
@@ -44,25 +23,18 @@ const PresentationContainer = ({ presentationPodIds, mountPresentation, ...props
 
   const userIsPresenter = (podId === 'DEFAULT_PRESENTATION_POD') ? currentUser.presenter : props.isPresenter;
 
-  return (
-    <Presentation
-      {
-      ...{
-        layoutContextDispatch,
-        numCameras,
-        ...props,
-        isViewer: currentUser.role === ROLE_VIEWER,
-        userIsPresenter: userIsPresenter && !layoutSwapped,
-        presentationBounds: presentation,
-        layoutType,
-        fullscreenContext,
-        fullscreenElementId,
-        isMobile: deviceType === DEVICE_TYPE.MOBILE,
-        isIphone,
-      }
-      }
-    />
-  );
+  return mountPresentationArea
+    && (
+      <PresentationArea
+        {
+        ...{
+          ...props,
+          isViewer: currentUser.role === ROLE_VIEWER,
+          userIsPresenter: userIsPresenter && !layoutSwapped,
+        }
+        }
+      />
+    );
 };
 
 const APP_CONFIG = Meteor.settings.public.app;
@@ -70,8 +42,8 @@ const PRELOAD_NEXT_SLIDE = APP_CONFIG.preloadNextSlides;
 const fetchedpresentation = {};
 
 export default withTracker(({ podId }) => {
-  const currentSlide = PresentationService.getCurrentSlide(podId);
-  const presentationIsDownloadable = PresentationService.isPresentationDownloadable(podId);
+  const currentSlide = PresentationAreaService.getCurrentSlide(podId);
+  const presentationIsDownloadable = PresentationAreaService.isPresentationDownloadable(podId);
   const layoutSwapped = getSwapLayout() && shouldEnableSwapLayout();
 
   let slidePosition;
@@ -80,7 +52,7 @@ export default withTracker(({ podId }) => {
       presentationId,
       id: slideId,
     } = currentSlide;
-    slidePosition = PresentationService.getSlidePosition(podId, presentationId, slideId);
+    slidePosition = PresentationAreaService.getSlidePosition(podId, presentationId, slideId);
     if (PRELOAD_NEXT_SLIDE && !fetchedpresentation[presentationId]) {
       fetchedpresentation[presentationId] = {
         canFetch: true,
@@ -90,9 +62,7 @@ export default withTracker(({ podId }) => {
     const currentSlideNum = currentSlide.num;
     const presentation = fetchedpresentation[presentationId];
 
-    if (PRELOAD_NEXT_SLIDE
-      && !presentation.fetchedSlide[currentSlide.num + PRELOAD_NEXT_SLIDE]
-      && presentation.canFetch) {
+    if (PRELOAD_NEXT_SLIDE && !presentation.fetchedSlide[currentSlide.num + PRELOAD_NEXT_SLIDE] && presentation.canFetch) {
       const slidesToFetch = Slides.find({
         podId,
         presentationId,
@@ -102,7 +72,7 @@ export default withTracker(({ podId }) => {
       }).fetch();
 
       const promiseImageGet = slidesToFetch
-        .filter((s) => !fetchedpresentation[presentationId].fetchedSlide[s.num])
+        .filter(s => !fetchedpresentation[presentationId].fetchedSlide[s.num])
         .map(async (slide) => {
           if (presentation.canFetch) presentation.canFetch = false;
           const image = await fetch(slide.imageUri);
@@ -110,22 +80,19 @@ export default withTracker(({ podId }) => {
             presentation.fetchedSlide[slide.num] = true;
           }
         });
-      Promise.all(promiseImageGet).then(() => {
-        presentation.canFetch = true;
-      });
+      Promise.all(promiseImageGet).then(() => presentation.canFetch = true);
     }
   }
-
   return {
     currentSlide,
     slidePosition,
-    downloadPresentationUri: PresentationService.downloadPresentationUri(podId),
-    isPresenter: PresentationService.isPresenter(podId),
+    downloadPresentationUri: PresentationAreaService.downloadPresentationUri(podId),
+    isPresenter: PresentationAreaService.isPresenter(podId),
     multiUser: WhiteboardService.hasMultiUserAccess(currentSlide && currentSlide.id, Auth.userID)
       && !layoutSwapped,
     presentationIsDownloadable,
-    mountPresentation: !!currentSlide,
-    currentPresentation: PresentationService.getCurrentPresentation(podId),
+    mountPresentationArea: !!currentSlide,
+    currentPresentation: PresentationAreaService.getCurrentPresentation(podId),
     notify,
     zoomSlide: PresentationToolbarService.zoomSlide,
     podId,
@@ -136,9 +103,10 @@ export default withTracker(({ podId }) => {
         publishedPoll: 1,
       },
     }).publishedPoll,
+    currentPresentationId: Session.get('currentPresentationId') || null,
     restoreOnUpdate: getFromUserSettings(
       'bbb_force_restore_presentation_on_new_events',
       Meteor.settings.public.presentation.restoreOnUpdate,
     ),
   };
-})(PresentationContainer);
+})(PresentationAreaContainer);

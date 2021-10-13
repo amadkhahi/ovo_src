@@ -1,8 +1,9 @@
 public:
   app:
-    mobileFontSize: 16px
+    mobileFontSize: 15px
     desktopFontSize: 14px
-    audioChatNotification: false
+    allowLogoutButton: true
+    audioChatNotification: true
     # Shows the audio modal when user joins the room. The audio modal prompts
     # user to select an option ("Microphone" and/or "Listen only") for joining
     # audio
@@ -11,27 +12,27 @@ public:
     listenOnlyMode: true
     forceListenOnly: false
     # Skips the echo test when connecting with microphone.
-    skipCheck: false
+    skipCheck: true
     # Skips the echo test when connecting with microphone right after user
-    # joins the room the first time. Subsequent joins to microphone won't
-    # have echo test skipped, for example if user leaves and joins the mic
-    # again or reloading page and joining mic again.
+    # joins the room the first time. Subsequents joins  to microphone won't
+    # have echo test skipped, for example if user leave and join mic again
+    # or reloading page and joining mic again.
     # This setting won't have effect if skipCheck = true
     skipCheckOnJoin: false
     #
-    # Allow users to change microphone/speaker dynamically
+    # Allow users to change microphone/speaker dinamically
     # The device is changed immediately, without the need to rejoin
     # audio. Default value is true
     # Firefox users: if no output devices is shown, you may set the flag
     # "media.setsinkid.enabled" to make it work properly
     # enableDynamicAudioDeviceSelection: true
     #
-    clientTitle: BigBlueButton
-    appName: BigBlueButton HTML5 Client
-    bbbServerVersion: 2.4
-    copyright: '©2021 BigBlueButton Inc.'
-    html5ClientBuild: HTML5_CLIENT_VERSION
-    helpLink: https://bigbluebutton.org/html5/
+    clientTitle: IHI ROOM
+    appName: IHI ROOM CLIENT
+    bbbServerVersion: 2.3
+    copyright: '©2021 IHI Jsc.'
+    html5ClientBuild: IHI_ROOM_4.0
+    helpLink: https://ihi.vn/html5/
     lockOnJoin: true
     cdn: ''
     basename: '/html5client'
@@ -44,6 +45,7 @@ public:
     allowUserLookup: false
     dynamicGuestPolicy: true
     enableGuestLobbyMessage: true
+    enableNetworkInformation: true
     enableLimitOfViewersInWebcam: false
     enableMultipleCameras: true
     enableTalkingIndicator: true
@@ -70,7 +72,7 @@ public:
       sendInvitationToIncludedModerators: false
     # https://github.com/bigbluebutton/bigbluebutton/pull/10826
     customHeartbeat: false
-    showAllAvailableLocales: true
+    showAllAvailableLocales: false
     # Show "Audio Filters for Microphone" option in settings menu.
     # When set to true, users are able to enable/disable microphone constraints,
     # otherwise default values for 'microphoneConstraints' option
@@ -102,14 +104,11 @@ public:
         chatPushAlerts: false
         userJoinAudioAlerts: false
         userJoinPushAlerts: false
-        userLeaveAudioAlerts: false
-        userLeavePushAlerts: false
         raiseHandAudioAlerts: true
         raiseHandPushAlerts: true
         guestWaitingAudioAlerts: true
         guestWaitingPushAlerts: true
         paginationEnabled: true
-        pushLayoutToEveryone: false
         # fallbackLocale: if the locale the client is loaded in does not have a
         # translation a string, it will use the translation from the locale
         # specified in fallbackLocale. Note that fallbackLocale should be a
@@ -120,7 +119,7 @@ public:
         # Users can individually set their preferred locale through Settings,
         # but on first page load overrideLocale will trump the browser's
         # preferred locale
-        overrideLocale: null
+        overrideLocale: vi-VN
         #Audio constraints for microphone. Use this to control browser's
         #filters, such as AGC (Auto Gain Control) , Echo Cancellation,
         #Noise Supression, etc.
@@ -183,15 +182,18 @@ public:
     branding:
       displayBrandingArea: true
     connectionTimeout: 60000
-    showHelpButton: true
+    showHelpButton: false
     effectiveConnection:
       - critical
       - danger
       - warning
   externalVideoPlayer:
     enabled: true
+  networkMonitoring:
+    enableNetworkMonitoring: false
+    packetLostThreshold: 10
   kurento:
-    wsUrl: HOST
+    wsUrl: wss://room37.ihi.vn/bbb-webrtc-sfu
     # Valid for video-provider. Time (ms) before its WS connection times out
     # and tries to reconnect.
     wsConnectionTimeout: 4000
@@ -205,14 +207,6 @@ public:
       # subscribe reattempt increases the reconnection timer up to this
       maxTimeout: 60000
     screenshare:
-      # Experimental. True is the canonical behavior. Flip to false to reverse
-      # the negotiation flow for subscribers.
-      subscriberOffering: false
-      # Experimental. Server wide configuration to choose which bbb-webrtc-sfu
-      # media server adapter should be used for screen sharing.
-      # Default is undefined, which means the default setting in bbb-webrtc-sfu
-      # prevails (screenshareMediaServer).
-      #mediaServer: Kurento
       bitrate: 1500
       mediaTimeouts:
         maxConnectionAttempts: 2
@@ -312,16 +306,6 @@ public:
     enableVideo: true
     enableVideoMenu: true
     enableListenOnly: true
-    # Experimental. Server wide configuration to choose which bbb-webrtc-sfu
-    # media server adapter should be used for listen only.
-    # Default is undefined, which means the default setting in bbb-webrtc-sfu
-    # prevails (listenOnlyMediaServer).
-    #listenOnlyMediaServer: Kurento
-    # Experimental. Server wide configuration to choose which bbb-webrtc-sfu
-    # media server adapter should be used for webcams.
-    # Default is undefined, which means the default setting in bbb-webrtc-sfu
-    # prevails (videoMediaServer).
-    #videoMediaServer: Kurento
     autoShareWebcam: false
     skipVideoPreview: false
     skipVideoPreviewOnFirstJoin: false
@@ -375,36 +359,36 @@ public:
       thresholds:
         - users: 30
           desktopPageSizes:
-            moderator: 25
-            viewer: 25
+            moderator: 6
+            viewer: 1
         - users: 40
           desktopPageSizes:
-            moderator: 20
-            viewer: 20
+            moderator: 8
+            viewer: 1
         - users: 50
           desktopPageSizes:
-            moderator: 16
-            viewer: 16
+            moderator: 10
+            viewer: 1
         - users: 60
           desktopPageSizes:
-            moderator: 14
-            viewer: 12
+            moderator: 12
+            viewer: 1
         - users: 70
           desktopPageSizes:
-            moderator: 12
-            viewer: 10
+            moderator: 14
+            viewer: 1
         - users: 80
           desktopPageSizes:
-            moderator: 10
-            viewer: 8
+            moderator: 16
+            viewer: 1
         - users: 90
           desktopPageSizes:
-            moderator: 8
-            viewer: 6
+            moderator: 18
+            viewer: 1
         - users: 100
           desktopPageSizes:
-            moderator: 6
-            viewer: 4
+            moderator: 20
+            viewer: 1
   syncUsersWithConnectionManager:
     enabled: false
     syncInterval: 60000
@@ -416,7 +400,6 @@ public:
     maxCustom: 5
     allowDragAndDropFile: false
     maxTypedAnswerLength: 45
-    chatMessage: true
   captions:
     enabled: true
     enableDictation: false
@@ -452,45 +435,14 @@ public:
       chat_poll_result: PUBLIC_CHAT_POLL_RESULT
     typingIndicator:
       enabled: true
-    moderatorChatEmphasized: true
   note:
     enabled: true
     url: ETHERPAD_HOST
   layout:
-    autoSwapLayout: false
+    autoSwapLayout: true
     hidePresentation: false
-    showParticipantsOnLogin: true
+    showParticipantsOnLogin: false
   media:
-    audio:
-      #
-      #
-      # Default bridge to be used by full audio mechanism.
-      # This is the bridge's name as contained in 'bridges' array
-      defaultFullAudioBridge: sipjs
-      #
-      #
-      # Same as above, but for listen only mechanism
-      defaultListenOnlyBridge: kurento
-      #
-      #
-      # Bridge array, here's where we list our bridges.
-      # To add new bridges, simply add the corresponding .js file in
-      # /imports/api/audio/client/bridge/ and add it to this list.
-      #
-      # Each bridge in this list, must have a name and path attribute.
-      # The name is the desired name/string you can set for your bridge, while
-      # the path specifies the file path, relative to
-      # '/imports/api/audio/client' dir.
-      #
-      bridges:
-          #
-          # The name of the bridge
-        - name: sipjs
-          #
-          # The bridge file path , relative to /imports/api/audio/client
-          path: 'bridge/sip'
-        - name: kurento
-          path: 'bridge/kurento'
     stunTurnServersFetchAddress: '/bigbluebutton/api/stuns'
     cacheStunTurnServers: true
     fallbackStunServer: ''
@@ -501,15 +453,12 @@ public:
     echoTestNumber: 'echo'
     relayOnlyOnReconnect: false
     listenOnlyCallTimeout: 25000
-    # Experimental. True is the canonical behavior. Flip to false to reverse
-    # the negotiation flow for LO subscribers.
-    listenOnlyOffering: false
     #Timeout (ms) for gathering ICE candidates. When this timeout expires
     #the SDP is sent to the server with the candidates the browser gathered
     #so far. Increasing this value might help avoiding 1004 error when
     #user activates microphone.
     iceGatheringTimeout: 5000
-    sipjsHackViaWs: false
+    sipjsHackViaWs: true
     # Mute/umute toggle throttle time
     toggleMuteThrottleTime: 300
     #Websocket keepAlive interval (seconds). You may set this to prevent
@@ -531,7 +480,7 @@ public:
     log: true
     notification:
       warning: false
-      error: true
+      error: false
     jitter:
       - 10
       - 20
@@ -551,6 +500,7 @@ public:
     help: STATS_HELP_URL
   presentation:
     allowDownloadable: true
+    defaultPresentationFile: default.pdf
     panZoomThrottle: 32
     restoreOnUpdate: false
     uploadEndpoint: '/bigbluebutton/presentation/upload'
@@ -593,15 +543,14 @@ public:
         mime: image/png
   selectRandomUser:
     enabled: true
-    countdown: false
+    countdown: true
   user:
     role_moderator: MODERATOR
     role_viewer: VIEWER
     label:
-      moderator: false
+      moderator: true
       mobile: true
       guest: true
-      sharingWebcam: true
   whiteboard:
     annotationsQueueProcessInterval: 60
     cursorInterval: 150
@@ -698,16 +647,6 @@ public:
       throttleInterval: 400
       flushOnClose: true
       logTag: ''
-  virtualBackgrounds:
-    enabled: true
-    storedOnBBB: true
-    showThumbnails: true
-    imagesPath: /resources/images/virtual-backgrounds/
-    thumbnailsPath: /resources/images/virtual-backgrounds/thumbnails/
-    fileNames:
-      - home.jpg
-      - coffeeshop.jpg
-      - board.jpg
 private:
   analytics:
     includeChat: true

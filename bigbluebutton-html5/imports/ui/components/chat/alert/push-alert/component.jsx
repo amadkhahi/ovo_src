@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import injectNotify from '/imports/ui/components/toast/inject-notify/component';
-import { PANELS, ACTIONS } from '../../../layout/enums';
+import { Session } from 'meteor/session';
+
 
 const propTypes = {
   notify: PropTypes.func.isRequired,
@@ -10,21 +11,15 @@ const propTypes = {
   title: PropTypes.node.isRequired,
   content: PropTypes.node.isRequired,
   alertDuration: PropTypes.number.isRequired,
-  layoutContextDispatch: PropTypes.func.isRequired,
 };
 
 class ChatPushAlert extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.showNotify = this.showNotify.bind(this);
+  static link(title, chatId) {
+    let chat = chatId;
 
-    this.componentDidMount = this.showNotify;
-    this.componentDidUpdate = this.showNotify;
-    this.link = this.link.bind(this);
-  }
-
-  link(title, chatId) {
-    const { layoutContextDispatch } = this.props;
+    if (chat === 'MAIN-PUBLIC-GROUP-CHAT') {
+      chat = 'public';
+    }
 
     return (
       <div
@@ -33,18 +28,9 @@ class ChatPushAlert extends PureComponent {
         aria-label={title}
         tabIndex={0}
         onClick={() => {
-          layoutContextDispatch({
-            type: ACTIONS.SET_SIDEBAR_CONTENT_IS_OPEN,
-            value: true,
-          });
-          layoutContextDispatch({
-            type: ACTIONS.SET_ID_CHAT_OPEN,
-            value: chatId,
-          });
-          layoutContextDispatch({
-            type: ACTIONS.SET_SIDEBAR_CONTENT_PANEL,
-            value: PANELS.CHAT,
-          });
+          Session.set('openPanel', 'chat');
+          Session.set('idChatOpen', chat);
+          window.dispatchEvent(new Event('panelChanged'));
         }}
         onKeyPress={() => null}
       >
@@ -53,11 +39,18 @@ class ChatPushAlert extends PureComponent {
     );
   }
 
+  constructor(props) {
+    super(props);
+    this.showNotify = this.showNotify.bind(this);
+
+    this.componentDidMount = this.showNotify;
+    this.componentDidUpdate = this.showNotify;
+  }
+
   showNotify() {
     const {
       notify,
       onOpen,
-      onClose,
       chatId,
       title,
       content,
@@ -65,11 +58,11 @@ class ChatPushAlert extends PureComponent {
     } = this.props;
 
     return notify(
-      this.link(title, chatId),
+      ChatPushAlert.link(title, chatId),
       'info',
       'chat',
-      { onOpen, onClose, autoClose: alertDuration },
-      this.link(content, chatId),
+      { onOpen, autoClose: alertDuration },
+      ChatPushAlert.link(content, chatId),
       true,
     );
   }

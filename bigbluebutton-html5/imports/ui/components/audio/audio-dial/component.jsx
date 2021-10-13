@@ -23,9 +23,7 @@ const intlMessages = defineMessages({
 });
 
 const propTypes = {
-  intl: PropTypes.shape({
-    formatMessage: PropTypes.func.isRequired,
-  }).isRequired,
+  intl: PropTypes.object.isRequired,
   formattedDialNum: PropTypes.string.isRequired,
   telVoice: PropTypes.string.isRequired,
 };

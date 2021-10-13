@@ -44,17 +44,10 @@ class UserContent extends PureComponent {
       forcePollOpen,
       hasBreakoutRoom,
       pendingUsers,
-      isWaitingRoomEnabled,
-      isGuestLobbyMessageEnabled,
       requestUserInformation,
       currentClosedChats,
-      sidebarContentPanel,
-      layoutContextDispatch,
       startedChats,
     } = this.props;
-
-    const showWaitingRoom = (isGuestLobbyMessageEnabled && isWaitingRoomEnabled)
-      || pendingUsers.length > 0;
 
     return (
       <div
@@ -62,18 +55,18 @@ class UserContent extends PureComponent {
         className={styles.content}
       >
         {CHAT_ENABLED
-          ? (
-            <UserMessages
-              {...{
-                isPublicChat,
-                compact,
-                intl,
-                roving,
-                currentClosedChats,
-                startedChats,
-              }}
-            />
-          ) : null}
+          ? (<UserMessages
+            {...{
+              isPublicChat,
+              compact,
+              intl,
+              roving,
+              currentClosedChats,
+              startedChats,
+            }}
+          />
+          ) : null
+        }
         {currentUser.role === ROLE_MODERATOR
           ? (
             <UserCaptionsContainer
@@ -81,40 +74,31 @@ class UserContent extends PureComponent {
                 intl,
               }}
             />
-          ) : null}
+          ) : null
+        }
         <UserNotesContainer
           {...{
             intl,
           }}
         />
-        {showWaitingRoom && currentUser.role === ROLE_MODERATOR
+        {pendingUsers.length > 0 && currentUser.role === ROLE_MODERATOR
           ? (
             <WaitingUsers
               {...{
                 intl,
                 pendingUsers,
-                sidebarContentPanel,
-                layoutContextDispatch,
               }}
             />
-          ) : null}
+          ) : null
+        }
         <UserPolls
           isPresenter={currentUser.presenter}
           {...{
             pollIsOpen,
             forcePollOpen,
-            sidebarContentPanel,
-            layoutContextDispatch,
           }}
         />
-        <BreakoutRoomItem
-          isPresenter={currentUser.presenter}
-          {...{
-            hasBreakoutRoom,
-            sidebarContentPanel,
-            layoutContextDispatch,
-          }}
-        />
+        <BreakoutRoomItem isPresenter={currentUser.presenter} hasBreakoutRoom={hasBreakoutRoom} />
         <UserParticipantsContainer
           {...{
             compact,

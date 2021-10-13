@@ -9,9 +9,7 @@ import cx from 'classnames';
 import { styles } from './styles';
 
 const propTypes = {
-  intl: PropTypes.shape({
-    formatMessage: PropTypes.func.isRequired,
-  }).isRequired,
+  intl: PropTypes.object.isRequired,
   changeInputDevice: PropTypes.func.isRequired,
   changeOutputDevice: PropTypes.func.isRequired,
   handleBack: PropTypes.func.isRequired,
@@ -96,8 +94,6 @@ class AudioSettings extends React.Component {
       handleRetry,
     } = this.props;
 
-    const { inputDeviceId, outputDeviceId } = this.state;
-
     return (
       <div className={styles.formWrapper}>
         <div className={styles.form}>
@@ -117,7 +113,7 @@ class AudioSettings extends React.Component {
                   {intl.formatMessage(intlMessages.micSourceLabel)}
                   <DeviceSelector
                     id="inputDeviceSelector"
-                    value={inputDeviceId}
+                    value={this.state.inputDeviceId}
                     className={styles.select}
                     kind="audioinput"
                     onChange={this.handleInputChange}
@@ -134,7 +130,7 @@ class AudioSettings extends React.Component {
                   {intl.formatMessage(intlMessages.speakerSourceLabel)}
                   <DeviceSelector
                     id="outputDeviceSelector"
-                    value={outputDeviceId}
+                    value={this.state.outputDeviceId}
                     className={styles.select}
                     kind="audiooutput"
                     onChange={this.handleOutputChange}
@@ -146,7 +142,6 @@ class AudioSettings extends React.Component {
 
           <div className={styles.row}>
             <div className={cx(styles.col, styles.spacedLeft)}>
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
               <label
                 htmlFor="audioTest"
                 className={styles.labelSmall}
@@ -157,6 +152,7 @@ class AudioSettings extends React.Component {
             </div>
           </div>
         </div>
+
 
         <div className={styles.enterAudio}>
           <Button

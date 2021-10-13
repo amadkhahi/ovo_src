@@ -164,8 +164,7 @@ class RecordingIndicator extends PureComponent {
 
     const recordMeetingButton = (
       <div
-        aria-label={recordTitle}
-        aria-describedby={"recording-description"}
+        aria-label={title}
         className={recording ? styles.recordingControlON : styles.recordingControlOFF}
         role="button"
         tabIndex={0}
@@ -174,10 +173,15 @@ class RecordingIndicator extends PureComponent {
         onKeyPress={recordingToggle}
       >
         {recordingIndicatorIcon}
+
         <div className={styles.presentationTitle}>
-          <span id={"recording-description"} className={styles.visuallyHidden}>
-            {`${title} ${recording ? humanizeSeconds(time) : ''}`}
-          </span>
+          {recording
+            ? (
+              <span className={styles.visuallyHidden}>
+                {`${intl.formatMessage(intlMessages.recordingAriaLabel)} ${humanizeSeconds(time)}`}
+              </span>
+            ) : null
+          }
           {recording
             ? <span aria-hidden>{humanizeSeconds(time)}</span> : <span>{recordTitle}</span>}
         </div>

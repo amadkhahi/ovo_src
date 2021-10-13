@@ -240,7 +240,7 @@ class MessageForm extends PureComponent {
     if (disabled
       || msg.length > maxMessageLength) {
       this.setState({ hasErrors: true });
-      return;
+      return false;
     }
 
     // Sanitize. See: http://shebang.brandonmintern.com/foolproof-html-escaping-in-javascript/
@@ -251,8 +251,13 @@ class MessageForm extends PureComponent {
 
     const callback = this.typingIndicator ? stopUserTyping : null;
 
-    handleSendMessage(msg);
-    this.setState({ message: '', hasErrors: false }, callback);
+    return (
+      handleSendMessage(msg),
+      this.setState({
+        message: '',
+        hasErrors: false,
+      }, callback)
+    );
   }
 
   render() {
@@ -262,7 +267,6 @@ class MessageForm extends PureComponent {
       title,
       disabled,
       className,
-      idChatOpen,
       partnerIsLoggedOut,
     } = this.props;
 
@@ -301,11 +305,11 @@ class MessageForm extends PureComponent {
             label={intl.formatMessage(messages.submitLabel)}
             color="primary"
             icon="send"
-            onClick={() => { }}
+            onClick={() => {}}
             data-test="sendMessageButton"
           />
         </div>
-        <TypingIndicatorContainer {...{ idChatOpen, error }} />
+        <TypingIndicatorContainer {...{ error }} />
       </form>
     ) : null;
   }

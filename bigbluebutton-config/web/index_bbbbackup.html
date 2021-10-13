@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <title>ROOM.IHI.VN</title>
+    <meta name="description" content="Hihihihi.">
+    <meta name="keywords" content="ELN">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" href="favicon.ico">
+
+    <link rel="stylesheet" href="css/bijou.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/bbb-bootstrap.css">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bigbluebutton.js"></script>
+	</head>
+  <body>
+    <div class='main'>
+    <!-- Messages -->
+    <div id='messages' class='hidden'>
+    </div>
+
+    <!-- Header -->
+    <div class='navbar'>
+      <div class='container'>
+        <div class="logo">
+          <img src="#" width="240" alt="ROOM IHI DEMO"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class='container'>
+
+
+
+
+
+      <!-- Welcome Message & Login Into Demo -->
+      <div class='row'>
+        <div class='span six html5clientOnly input-center'>
+          <div class='join-meeting '>
+            <h4>Try ROOM IHI Demo</h4>
+
+            <form name="form1" method="GET" onsubmit="return checkform(this);" action="/demo/demoHTML5.jsp">
+              <input type="text" id="username" required="" name="username" placeholder="Enter Your Name" size="29" class="field input-default" autofocus>
+              <input type="submit" value="Join" class="submit_btn button success large"><br>
+              <input type="hidden" name="isModerator" value="true">
+              <input type="hidden" name="action" value="create">
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <hr class="featurette-divider">
+    <!--  Footer -->
+    <footer>
+      <div class='container'>
+
+	      <div class="row">
+	      	<div class="span six last">
+						<ul>
+							<li>
+								Follow Us:
+							</li>
+							<li><a class="twitter" href="#" title="IHI Twitter Page" target="_blank"><i class="fa fa-twitter"></i></a></li>
+							<li><a class="facebook" href="#" title="IHI Facebook Page" target="_blank"><i class="fa fa-facebook"></i></a></li>
+							<li><a class="youtube" href="#" title="IHI YouTube Page" target="_blank"><i class="fa fa-youtube"></i> </a></li>
+						</ul>
+	      	</div>
+	      </div> 
+
+
+	      <div class="row">
+	      	<div class="span twelve center">
+		        <p>Copyright &copy; 2021 IHI Jsc.<br>
+		        <small>Version <a href="http://ihi.vn/">2.2</a></small>
+		        </p>
+	      	</div>
+	      </div>
+      </div>
+    </footer>
+  </body>
+</html>
